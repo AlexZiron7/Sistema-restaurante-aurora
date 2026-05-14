@@ -14,7 +14,16 @@ Antes de comenzar, asegúrate de tener instalado lo siguiente:
 
 ---
 
-## 🛠️ Instalación Paso a Paso
+## 📦 Instalación con el Ejecutable (Recomendado para Producción)
+
+Si ya tienes el archivo `Setup-SistemaRestaurante-v1.x.x.exe`:
+1.  Haz doble clic en el instalador.
+2.  Sigue los pasos y asegúrate de marcar **"Agregar excepción de Firewall"**.
+3.  Al finalizar, tendrás un acceso directo en tu escritorio.
+
+---
+
+## 🛠️ Instalación para Desarrolladores (Código Fuente)
 
 ### 1. Opción A: Instalación Automática (Recomendado)
 
