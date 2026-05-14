@@ -1,0 +1,118 @@
+module.exports = function (app, io, deps) {
+  const { getDb, upload, path, fs } = deps;
+
+  app.post('/api/productos/:id/imagen', upload.single('imagen'), (req, res) => {
+    const db = getDb();
+    const { id } = req.params;
+
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No se subió ninguna imagen' });
+    }
+
+    const imagenUrl = `/uploads/${req.file.filename}`;
+
+    db.run("UPDATE productos SET imagen = ? WHERE id = ?", [imagenUrl, id], function (err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ success: true, imagen: imagenUrl });
+    });
+  });
+
+  app.delete('/api/productos/:id/imagen', (req, res) => {
+    const db = getDb();
+    const { id } = req.params;
+
+    db.get("SELECT imagen FROM productos WHERE id = ?", [id], (err, row) => {
+      if (err) return res.status(500).json({ error: err.message });
+      if (!row?.imagen) {
+        return res.json({ success: true });
+      }
+
+      const filePath = path.join(__dirname, '..', '..', 'public', row.imagen);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+
+      db.run("UPDATE productos SET imagen = NULL WHERE id = ?", [id], function (err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true });
+      });
+    });
+  });
+
+  app.get('/api/productos', (req, res) => {
+    const db = getDb();
+    const query = `
+        SELECT p.*, c.nombre as categoria_nombre 
+        FROM productos p 
+        LEFT JOIN categorias c ON p.id_categoria = c.id 
+        WHERE p.activo = 1 
+        ORDER BY c.nombre, p.nombre
+    `;
+    db.all(query, [], (err, rows) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json(rows);
+    });
+  });
+
+  app.post('/api/productos', (req, res) => {
+    const db = getDb();
+    const { nombre, precio_usd, id_categoria, es_combo, productos_incluidos, precio_combo, descripcion } = req.body;
+
+    if (!nombre || !precio_usd) {
+      return res.status(400).json({ success: false, message: 'Nombre y precio son requeridos' });
+    }
+
+    const incString = productos_incluidos ? (typeof productos_incluidos === 'string' ? productos_incluidos : JSON.stringify(productos_incluidos)) : null;
+
+    db.run("INSERT INTO productos (nombre, precio_usd, id_categoria, es_combo, productos_incluidos, precio_combo, descripcion) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      [nombre, precio_usd, id_categoria || null, es_combo ? 1 : 0, incString, precio_combo || null, descripcion || ''], function (err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true, id: this.lastID });
+      });
+  });
+
+  app.put('/api/productos/:id', (req, res) => {
+    const db = getDb();
+    const { id } = req.params;
+    const { nombre, precio_usd, id_categoria, activo, es_combo, productos_incluidos, precio_combo, descripcion } = req.body;
+
+    let query = "UPDATE productos SET ";
+    let params = [];
+    let updates = [];
+
+    if (nombre) { updates.push("nombre = ?"); params.push(nombre); }
+    if (precio_usd !== undefined) { updates.push("precio_usd = ?"); params.push(precio_usd); }
+    if (id_categoria !== undefined) { updates.push("id_categoria = ?"); params.push(id_categoria); }
+    if (activo !== undefined) { updates.push("activo = ?"); params.push(activo ? 1 : 0); }
+    if (es_combo !== undefined) { updates.push("es_combo = ?"); params.push(es_combo ? 1 : 0); }
+    if (productos_incluidos !== undefined) {
+      const incString = productos_incluidos ? (typeof productos_incluidos === 'string' ? productos_incluidos : JSON.stringify(productos_incluidos)) : null;
+      updates.push("productos_incluidos = ?");
+      params.push(incString);
+    }
+    if (precio_combo !== undefined) { updates.push("precio_combo = ?"); params.push(precio_combo || null); }
+    if (descripcion !== undefined) { updates.push("descripcion = ?"); params.push(descripcion); }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ success: false, message: 'No hay campos para actualizar' });
+    }
+
+    query += updates.join(", ") + " WHERE id = ?";
+    params.push(id);
+
+    db.run(query, params, function (err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ success: true });
+    });
+  });
+
+  app.delete('/api/productos/:id', (req, res) => {
+    const db = getDb();
+    const { id } = req.params;
+
+    db.run("UPDATE productos SET activo = 0 WHERE id = ?", [id], function (err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ success: true });
+    });
+  });
+};

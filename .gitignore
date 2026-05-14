@@ -1,0 +1,14 @@
+node_modules/
+*.db
+client/dist/
+client/dev-dist/
+.env
+public/uploads/*
+!public/uploads/.gitkeep
+backups/
+dist/
+installer/
+*.log
+.DS_Store
+Thumbs.db
+nul

@@ -1,0 +1,58 @@
+{
+  "name": "Sistema-Restaurante",
+  "version": "1.0.0",
+  "description": "Sistema POS para restaurante",
+  "main": "server.js",
+  "bin": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "build": "cd client && npm run build",
+    "postinstall": "cd client && npm install",
+    "build:exe": "npm run build && npx pkg . && node scripts/patch-subsystem.js",
+    "dist": "npm run build:exe && iscc dist-setup.iss",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:client": "vitest run --config client/vitest.config.js",
+    "test:all": "npm test && npm run test:client"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "pkg": {
+    "assets": [
+      "client/dist/**/*",
+      "public/**/*",
+      "node_modules/sqlite3/build/Release/node_sqlite3.node",
+      "server/db/migrations/**/*"
+    ],
+    "scripts": [
+      "server/db/migrations/*.js"
+    ],
+    "targets": [
+      "node22-win-x64"
+    ],
+    "outputPath": "dist",
+    "compress": "Brotli"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.16.1",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^16.4.7",
+    "express": "^5.2.1",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.7",
+    "multer": "^2.1.1",
+    "socket.io": "^4.8.3",
+    "sqlite3": "^6.0.1",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@yao-pkg/pkg": "^6.19.0",
+    "supertest": "^7.2.2",
+    "vitest": "^4.1.6"
+  }
+}
