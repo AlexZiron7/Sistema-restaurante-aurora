@@ -2,7 +2,7 @@ const axios = require('axios');
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
-const pkg = require('./package.json');
+const pkg = require('../package.json');
 
 const UPDATE_URL = 'https://raw.githubusercontent.com/AlexZiron7/Sistema-restaurante-aurora/main/update.json';
 
