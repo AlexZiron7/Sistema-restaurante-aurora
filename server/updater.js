@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const pkg = require('./package.json');
 
-const UPDATE_URL = 'https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/update.json'; // Cambia esto
+const UPDATE_URL = 'https://raw.githubusercontent.com/AlexZiron7/Sistema-restaurante-aurora/main/update.json';
 
 async function checkForUpdates() {
     try {
