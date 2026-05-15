@@ -4,7 +4,7 @@
         "message": "Su suscripción ha vencido. Contacte a Aurora Devs para reactivar."
     },
     "00000000-000": {
-        "status": "active",
+        "status": "suspended",
         "expiresAt": "2030-12-31T23:59:59Z",
         "message": "Licencia activa (Aurora Devs)."
     }
