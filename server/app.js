@@ -86,11 +86,19 @@ io.on('connection', (socket) => {
 });
 
 async function initTasaBCV() {
-    const tasa = await obtenerTasaBCV();
-    if (tasa) {
-        getDb().run("UPDATE config SET valor = ?, updated_at = CURRENT_TIMESTAMP WHERE clave = 'tasa_bcv'", [tasa.toString()]);
+    try {
+        const tasa = await obtenerTasaBCV();
+        if (tasa) {
+            const db = getDb();
+            if (db) {
+                db.run("UPDATE config SET valor = ?, updated_at = CURRENT_TIMESTAMP WHERE clave = 'tasa_bcv'", [tasa.toString()]);
+            }
+        }
+        return tasa;
+    } catch (error) {
+        console.error('⚠️ Error al inicializar Tasa BCV:', error.message);
+        return null;
     }
-    return tasa;
 }
 
 if (!process.env.VITEST_DB) initTasaBCV();

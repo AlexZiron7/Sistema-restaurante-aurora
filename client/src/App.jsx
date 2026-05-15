@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { RestaurantProvider } from './contexts/RestaurantContext';
@@ -71,9 +72,9 @@ function AdminRoute({ children }) {
 
 function AppRoutes() {
   const { user } = useAuth();
-  const [license, setLicense] = React.useState({ isSystemLocked: false, lockMessage: '' });
+  const [license, setLicense] = useState({ isSystemLocked: false, lockMessage: '' });
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Verificar licencia al cargar
       fetch('/api/license-status')
       .then(res => res.json())

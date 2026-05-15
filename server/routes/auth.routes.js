@@ -1,10 +1,6 @@
 module.exports = function (app, io, deps) {
   const { getDb, setModoDemo, bcrypt } = deps;
 
-  app.get('/', (req, res) => {
-    res.send('Sistema Restaurante funcionando 🚀');
-  });
-
   app.get('/api/ping', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });

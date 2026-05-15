@@ -99,8 +99,8 @@ Source: "public\uploads\*"; DestDir: "{app}\public\uploads"; Flags: ignoreversio
 
 ; ===========================================================================
 ; [Dirs] - Directorios a crear (con permisos de escritura)
-; ===========================================================================
 [Dirs]
+Name: "{app}"; Permissions: users-modify
 Name: "{app}\public\uploads"; Permissions: users-modify
 Name: "{app}\public\demo";    Permissions: users-modify
 

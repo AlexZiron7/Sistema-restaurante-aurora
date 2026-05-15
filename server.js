@@ -16,13 +16,18 @@ server.listen(PORT, async () => {
         const url = `http://localhost:${PORT}`;
         setTimeout(() => {
             const { exec } = require('child_process');
-            exec(`start chrome.exe --app="${url}"`, () => {
-                exec(`start msedge.exe --app="${url}"`);
+            // Intentar abrir con Chrome en modo App, si falla intentar Edge, si falla usar el predeterminado
+            exec(`start chrome.exe --app="${url}"`, (err) => {
+                if (err) {
+                    exec(`start msedge.exe --app="${url}"`, (err2) => {
+                        if (err2) exec(`start ${url}`);
+                    });
+                }
             });
         }, 2000);
 
         // 1. Ejecutar migraciones primero
-        await runMigrations(db);
+        await runMigrations(db.db);
 
         // 2. Verificar Licencia (Kill Switch)
         await checkLicenseStatus();
