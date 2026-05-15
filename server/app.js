@@ -77,8 +77,10 @@ app.get('/api/license-status', (req, res) => {
 // Ruta para que el frontend reintente la verificación de licencia
 app.post('/api/license-status/recheck', async (req, res) => {
     console.log('[License] Reintento manual solicitado desde el frontend.');
-    await checkLicenseStatus();
-    res.json(getLockStatus());
+    await checkLicenseStatus('reintento_frontend');
+    const status = getLockStatus();
+    console.log('[License] Respuesta al reintento:', JSON.stringify(status));
+    res.json(status);
 });
 // ------------------------------------------
 

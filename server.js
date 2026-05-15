@@ -12,11 +12,12 @@ setupGlobalErrorHandlers();
 const PORT = process.env.PORT || 4001;
 server.listen(PORT, async () => {
     console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+    const url = `http://localhost:${PORT}`;
+
+    // Solo abrir navegador automático en modo empaquetado
     if (process.pkg) {
-        const url = `http://localhost:${PORT}`;
         setTimeout(() => {
             const { exec } = require('child_process');
-            // Intentar abrir con Chrome en modo App, si falla intentar Edge, si falla usar el predeterminado
             exec(`start chrome.exe --app="${url}"`, (err) => {
                 if (err) {
                     exec(`start msedge.exe --app="${url}"`, (err2) => {
@@ -25,22 +26,20 @@ server.listen(PORT, async () => {
                 }
             });
         }, 2000);
-
-        // 1. Ejecutar migraciones (Se ejecutan automáticamente en database.js)
-
-        // 2. Verificar Licencia (Kill Switch)
-        await checkLicenseStatus();
-
-        // 3. Buscar actualizaciones
-        checkForUpdates().then(update => {
-            if (update.available) {
-                console.log(`📢 [UPDATE] Hay una nueva versión disponible (${update.version})`);
-            }
-        });
-
-        // Re-verificar licencia cada 24 horas
-        setInterval(checkLicenseStatus, 24 * 60 * 60 * 1000);
     }
+
+    // 2. Verificar Licencia (Kill Switch) - se ejecuta siempre (dev y producción)
+    await checkLicenseStatus('inicio');
+
+    // 3. Buscar actualizaciones
+    checkForUpdates().then(update => {
+        if (update.available) {
+            console.log(`📢 [UPDATE] Hay una nueva versión disponible (${update.version})`);
+        }
+    });
+
+    // Re-verificar licencia cada 24 horas
+    setInterval(() => checkLicenseStatus('intervalo_24h'), 24 * 60 * 60 * 1000);
 });
 
 

@@ -18,16 +18,25 @@ function getHardwareId() {
 
 const appRoot = process.pkg ? path.dirname(process.execPath) : path.resolve(__dirname, '..');
 const CLIENT_ID = getHardwareId();
-const CONTROL_PANEL_URL = 'https://raw.githubusercontent.com/AlexZiron7/Sistema-restaurante-aurora/main/licenses.json';
+const CONTROL_PANEL_URL = 'https://gist.githubusercontent.com/AlexZiron7/deaba1ce68d20be46cd93e9c6d647d77/raw/9fbfc023f565f9e9f436ed3d4d1da1663c72ded9/gistfile1.txt';
 const LICENSE_CACHE_FILE = path.join(appRoot, '.license_cache');
 
 let isSystemLocked = false;
 let lockMessage = 'El sistema requiere activación.';
+let isCheckingLicense = false;
+let lastCheckResult = null;
 
 // Días de gracia permitidos sin conexión a internet
 const GRACE_PERIOD_DAYS = 7;
 
-async function checkLicenseStatus() {
+async function checkLicenseStatus(caller = 'desconocido') {
+    if (isCheckingLicense) {
+        console.log(`[License] ⚠️ Ya hay una verificación en curso (llamado por: ${caller}), ignorando...`);
+        return getLockStatus();
+    }
+    isCheckingLicense = true;
+    const ts = new Date().toISOString();
+    console.log(`[License] [${ts}] Iniciando verificación. Llamado por: ${caller}. Estado actual: locked=${isSystemLocked}`);
     try {
         console.log(`[License] Verificando estado para: ${CLIENT_ID}...`);
         const response = await axios.get(CONTROL_PANEL_URL, { timeout: 8000 });
@@ -36,75 +45,90 @@ async function checkLicenseStatus() {
         if (!remoteData || !remoteData[CLIENT_ID]) {
             isSystemLocked = true;
             lockMessage = 'Esta copia no está registrada. Contacte a soporte.';
+            lastCheckResult = 'no_registrada';
+            console.log(`[License] [${ts}] Resultado: NO REGISTRADA. ${CLIENT_ID} no encontrado en licencias.`);
             return;
         }
 
         const clientData = remoteData[CLIENT_ID];
         
-        // 1. Verificar estado manual
         if (clientData.status === 'suspended') {
             isSystemLocked = true;
             lockMessage = clientData.message || 'Sistema suspendido manualmente.';
+            lastCheckResult = 'suspendido';
+            console.log(`[License] [${ts}] Resultado: SUSPENDIDO.`);
             return;
         }
 
-        // 2. Verificar fecha de expiración
         if (clientData.expiresAt) {
             const today = new Date();
             const expiryDate = new Date(clientData.expiresAt);
             if (today > expiryDate) {
                 isSystemLocked = true;
                 lockMessage = clientData.message || `Suscripción vencida el ${expiryDate.toLocaleDateString()}.`;
+                lastCheckResult = 'vencido';
+                console.log(`[License] [${ts}] Resultado: VENCIDO. Expiró: ${clientData.expiresAt}`);
                 return;
             }
         }
 
         // --- EXITO: Guardar fecha de última verificación ---
         isSystemLocked = false;
-        fs.writeFileSync(LICENSE_CACHE_FILE, JSON.stringify({
-            lastCheck: new Date().getTime(),
-            clientId: CLIENT_ID
-        }));
-        console.log('✅ Licencia válida y activa.');
-
-    } catch (error) {
-        console.warn('⚠️ No se pudo conectar con el servidor de licencias. Verificando caché local...');
-        
-        if (!fs.existsSync(LICENSE_CACHE_FILE)) {
-            // First time run, but no internet or 404. Let's start the grace period.
+        try {
             fs.writeFileSync(LICENSE_CACHE_FILE, JSON.stringify({
                 lastCheck: new Date().getTime(),
                 clientId: CLIENT_ID
             }));
-            console.log('✅ Modo Offline Iniciado (Primer uso).');
+        } catch (writeError) {
+            console.warn('⚠️ No se pudo escribir caché de licencia:', writeError.message);
+        }
+        lastCheckResult = 'activo';
+        console.log(`[License] [${ts}] Resultado: ACTIVO. Sistema desbloqueado.`);
+
+    } catch (error) {
+        console.warn(`[License] [${ts}] Error de conexión:`, error.message);
+        
+        if (!fs.existsSync(LICENSE_CACHE_FILE)) {
+            fs.writeFileSync(LICENSE_CACHE_FILE, JSON.stringify({
+                lastCheck: new Date().getTime(),
+                clientId: CLIENT_ID
+            }));
+            console.log(`[License] [${ts}] Caché creado. Inicio período de gracia.`);
         }
 
         try {
             const cache = JSON.parse(fs.readFileSync(LICENSE_CACHE_FILE, 'utf8'));
             const lastCheck = new Date(cache.lastCheck);
             const now = new Date();
-            
-            // Calcular días transcurridos
             const diffTime = Math.abs(now - lastCheck);
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            console.log(`[License] [${ts}] Caché: lastCheck=${cache.lastCheck} (${lastCheck.toISOString()}), diffDays=${diffDays}`);
             
             if (diffDays > GRACE_PERIOD_DAYS) {
                 isSystemLocked = true;
                 lockMessage = `El sistema requiere conexión a internet para verificar la licencia (Límite: ${GRACE_PERIOD_DAYS} días).`;
-                console.error('❌ PERIODO DE GRACIA EXCEDIDO');
+                lastCheckResult = 'gracia_excedido';
+                console.error(`[License] [${ts}] Resultado: GRACIA EXCEDIDA (${diffDays} días). BLOQUEADO.`);
             } else {
                 isSystemLocked = false;
-                console.log(`✅ Modo Offline (Día ${diffDays}/${GRACE_PERIOD_DAYS}).`);
+                lastCheckResult = 'offline';
+                console.log(`[License] [${ts}] Resultado: OFFLINE (Día ${diffDays}/${GRACE_PERIOD_DAYS}). Desbloqueado.`);
             }
         } catch (e) {
             isSystemLocked = true;
             lockMessage = 'Error leyendo la licencia local.';
+            lastCheckResult = 'error_cache';
+            console.error(`[License] [${ts}] Error leyendo caché:`, e.message);
         }
+    } finally {
+        isCheckingLicense = false;
+        console.log(`[License] [${ts}] Finalizado. locked=${isSystemLocked}, msg=${lockMessage.substring(0, 60)}`);
     }
 }
 
 function getLockStatus() {
-    return { isSystemLocked, lockMessage, clientId: CLIENT_ID };
+    return { isSystemLocked, lockMessage, clientId: CLIENT_ID, lastCheckResult };
 }
 
 module.exports = { checkLicenseStatus, getLockStatus };
