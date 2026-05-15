@@ -51,8 +51,11 @@ async function checkLicenseStatus(caller = 'desconocido') {
         }
 
         const clientData = remoteData[CLIENT_ID];
+        const status = (clientData.status || '').toLowerCase();
         
-        if (clientData.status === 'suspended') {
+        console.log(`[License] Datos recibidos para ${CLIENT_ID}: status=${status}, expiresAt=${clientData.expiresAt}`);
+
+        if (status === 'suspended') {
             isSystemLocked = true;
             lockMessage = clientData.message || 'Sistema suspendido manualmente.';
             lastCheckResult = 'suspendido';
@@ -63,7 +66,10 @@ async function checkLicenseStatus(caller = 'desconocido') {
         if (clientData.expiresAt) {
             const today = new Date();
             const expiryDate = new Date(clientData.expiresAt);
-            if (today > expiryDate) {
+            
+            if (isNaN(expiryDate.getTime())) {
+                console.warn(`[License] Fecha de expiración inválida: ${clientData.expiresAt}`);
+            } else if (today > expiryDate) {
                 isSystemLocked = true;
                 lockMessage = clientData.message || `Suscripción vencida el ${expiryDate.toLocaleDateString()}.`;
                 lastCheckResult = 'vencido';
@@ -72,9 +78,11 @@ async function checkLicenseStatus(caller = 'desconocido') {
             }
         }
 
-        // --- EXITO: Guardar fecha de última verificación ---
+        // Si el estado es 'active' (o cualquier cosa que no sea suspended/vencido), desbloqueamos
         isSystemLocked = false;
-        lockMessage = 'Sistema activado correctamente.';
+        // Si el cliente tiene un mensaje personalizado, lo usamos incluso si está activo 
+        // (por si el usuario quiere mostrar "Licencia activa (Aurora Devs)")
+        lockMessage = clientData.message || 'Sistema activado correctamente.';
         try {
             fs.writeFileSync(LICENSE_CACHE_FILE, JSON.stringify({
                 lastCheck: new Date().getTime(),

@@ -1,6 +1,6 @@
 {
-  "name": "aurora-res",
-  "version": "1.0.0",
+  "name": "AuroraRES",
+  "version": "1.0.1",
   "description": "Sistema POS para restaurante",
   "main": "server.js",
   "bin": "server.js",
@@ -9,7 +9,7 @@
     "build": "cd client && npm run build",
     "postinstall": "cd client && npm install",
     "build:exe": "npm run build && npx pkg . && node scripts/patch-subsystem.js",
-    "dist": "npm run build:exe && iscc dist-setup.iss",
+    "dist": "npm run build:exe && \"C:\\Program Files (x86)\\Inno Setup 6\\iscc.exe\" dist-setup.iss",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:client": "vitest run --config client/vitest.config.js",

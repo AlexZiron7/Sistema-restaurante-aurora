@@ -60,7 +60,10 @@ app.use((req, res, next) => {
     
     // Si el sistema está bloqueado, solo permitimos peticiones de estado, 
     // todo lo demás (pedidos, auth, etc.) se bloquea.
-    if (isSystemLocked && !req.path.startsWith('/api/license-status')) {
+    // Permitir archivos estáticos básicos (imágenes, iconos, css) para que la pantalla de bloqueo se vea bien
+    const isStaticResource = /\.(png|jpg|jpeg|gif|ico|css|svg)$/i.test(req.path);
+
+    if (isSystemLocked && !req.path.startsWith('/api/license-status') && !isStaticResource) {
         return res.status(403).json({
             locked: true,
             message: lockMessage

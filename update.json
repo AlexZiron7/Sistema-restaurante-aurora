@@ -1,5 +1,5 @@
 {
   "version": "1.0.1",
   "url": "https://github.com/AlexZiron7/Sistema-restaurante-aurora/releases/download/v1.0.1/Setup-AuroraRES-v1.0.1.exe",
-  "notes": "Branding actualizado a Aurora RES, iconos personalizados, limpieza de base de datos y carga masiva CSV."
+  "notes": "v1.0.1: Actualización de datos de contacto (Alex Zirón), logo Aurora en pantalla de bloqueo, corrección de Kill Switch y mejoras de branding."
 }

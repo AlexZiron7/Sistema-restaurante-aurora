@@ -37,10 +37,10 @@ function ProtectedRoute({ children }) {
     return (
       <div className="h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="w-14 h-14 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg shadow-indigo-200">
-            <span className="text-white text-2xl font-black">R</span>
+          <div className="w-14 h-14 bg-gradient-to-br from-sky-500 to-blue-600 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg shadow-sky-200">
+            <span className="text-white text-2xl font-black italic">A</span>
           </div>
-          <div className="w-5 h-5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin mx-auto" />
+          <div className="w-5 h-5 border-2 border-sky-400 border-t-transparent rounded-full animate-spin mx-auto" />
         </div>
       </div>
     );

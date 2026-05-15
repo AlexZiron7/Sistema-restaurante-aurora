@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { HeadphonesIcon, MessageCircle, Mail, Phone, ExternalLink, Clock, CheckCircle } from 'lucide-react';
 
 export default function SoportePage() {
-  const [config, setConfig] = useState({ whatsapp_soporte: '+584121234567', email_soporte: 'soporte@aurora-devs.com' });
+  const [config, setConfig] = useState({ whatsapp_soporte: '+584127108519', email_soporte: 'alex.ziron7@gmail.com' });
   const [mensaje, setMensaje] = useState('');
 
   useEffect(() => {
@@ -132,7 +132,7 @@ export default function SoportePage() {
         {/* Footer */}
         <div className="text-center mt-5 text-xs text-gray-400">
           <p>Aurora RES · Desarrollado por <span className="font-semibold text-gray-500">Aurora Devs</span></p>
-          <p className="mt-0.5">v2.0 · 2025</p>
+          <p className="mt-0.5">v1.0.1 · 2026</p>
         </div>
       </div>
     </div>

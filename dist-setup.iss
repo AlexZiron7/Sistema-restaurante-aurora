@@ -87,6 +87,7 @@ Name: "firewall";    Description: "{cm:FirewallException}";  GroupDescription: "
 [Files]
 ; Ejecutable principal (compilado con pkg)
 Source: "dist\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "client\public\logo-aplicacion.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 ; Base de datos demo (solo si no existe, para no sobreescribir datos del usuario)
 Source: "restaurante-demo.db"; DestDir: "{app}"; DestName: "restaurante-demo.db"; Flags: ignoreversion onlyifdoesntexist
@@ -115,11 +116,11 @@ Type: files; Name: "{app}\.license_cache"
 ; ===========================================================================
 [Icons]
 ; Menu inicio
-Name: "{group}\{#MyAppName}";           Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"
+Name: "{group}\{#MyAppName}";           Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; IconFilename: "{app}\logo-aplicacion.ico"
 Name: "{group}\Desinstalar {#MyAppName}"; Filename: "{uninstallexe}"
 
 ; Escritorio (solo si el usuario lo pidio)
-Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Tasks: desktopicon
+Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Tasks: desktopicon; IconFilename: "{app}\logo-aplicacion.ico"
 
 ; ===========================================================================
 ; [Run] - Ejecutar despues de instalar
