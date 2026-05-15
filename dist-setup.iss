@@ -36,7 +36,7 @@ Compression=lzma2/ultra64
 SolidCompression=yes
 ; --- Salida ---
 OutputDir=installer
-OutputBaseFilename=Setup-SistemaRestaurante-v{#MyAppVersion}
+OutputBaseFilename=Setup-AuroraRES-v{#MyAppVersion}
 ; --- Permisos ---
 PrivilegesRequired=admin
 ArchitecturesInstallIn64BitMode=x64compatible
