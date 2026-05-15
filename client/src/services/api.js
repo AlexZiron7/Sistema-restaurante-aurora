@@ -1,10 +1,31 @@
 const API_URL = '/api';
 
+let authToken = null;
+
+export function setAuthToken(token) {
+  authToken = token;
+}
+
+export function clearAuthToken() {
+  authToken = null;
+}
+
 async function request(url, options = {}) {
+  const headers = { 'Content-Type': 'application/json', ...options.headers };
+  if (authToken) {
+    headers['Authorization'] = `Bearer ${authToken}`;
+  }
   const res = await fetch(`${API_URL}${url}`, {
-    headers: { 'Content-Type': 'application/json', ...options.headers },
+    headers,
     ...options,
   });
+  if (res.status === 401) {
+    clearAuthToken();
+    localStorage.removeItem('restaurante_user');
+    localStorage.removeItem('restaurante_token');
+    window.location.href = '/login';
+    throw new Error('Sesión expirada');
+  }
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.message || body.error || `Error del servidor (${res.status})`);
@@ -17,6 +38,10 @@ export const api = {
     return request('/auth/login', {
       method: 'POST', body: JSON.stringify({ usuario, pin })
     });
+  },
+
+  async logout() {
+    return request('/auth/logout', { method: 'POST' });
   },
 
   async getMesas() { return request('/mesas'); },

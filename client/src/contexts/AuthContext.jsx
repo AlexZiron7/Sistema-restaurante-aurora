@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../services/api';
+import { api, setAuthToken, clearAuthToken } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -19,8 +19,10 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const storedUser = localStorage.getItem('restaurante_user');
-    if (storedUser) {
+    const storedToken = localStorage.getItem('restaurante_token');
+    if (storedUser && storedToken) {
       setUser(JSON.parse(storedUser));
+      setAuthToken(storedToken);
     }
     setLoading(false);
   }, []);
@@ -38,6 +40,8 @@ export function AuthProvider({ children }) {
     try {
       const response = await api.login(usuario, pin);
       if (response.success) {
+        setAuthToken(response.token);
+        localStorage.setItem('restaurante_token', response.token);
         setUser(response.user);
         localStorage.setItem('restaurante_user', JSON.stringify(response.user));
         const redirectPath = ROL_REDIRECTS[response.user.rol] || '/mesas';
@@ -51,9 +55,13 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
+    api.logout().catch(() => {});
+    clearAuthToken();
     setUser(null);
     localStorage.removeItem('restaurante_user');
+    localStorage.removeItem('restaurante_token');
     localStorage.removeItem('modo_demo');
+    navigate('/login');
   };
 
   return (

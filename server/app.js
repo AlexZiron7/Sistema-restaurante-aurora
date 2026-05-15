@@ -10,6 +10,8 @@ const { getDb, setModoDemo } = require('../database');
 const bcrypt = require('bcryptjs');
 const { obtenerTasaBCV } = require('../services/tasaBcv');
 const { errorHandler } = require('./middleware/errorHandler');
+const { authMiddleware, requireRol, crearToken, destruirToken } = require('./middleware/auth');
+const { rateLimiter } = require('./middleware/rateLimiter');
 const { getLockStatus, checkLicenseStatus } = require('./licenseManager');
 
 const appRoot = process.pkg ? path.dirname(process.execPath) : path.resolve(__dirname, '..');
@@ -42,16 +44,28 @@ const upload = multer({
     }
 });
 
+const ALLOWED_ORIGINS = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(',')
+  : ['http://localhost:4001', 'http://localhost:5173', 'http://localhost'];
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "*",
+        origin: ALLOWED_ORIGINS,
         methods: ["GET", "POST"]
     }
 });
 
-app.use(cors());
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(null, true);
+        }
+    }
+}));
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // --- SISTEMA DE LICENCIA (KILL SWITCH) ---
@@ -89,6 +103,9 @@ app.post('/api/license-status/recheck', async (req, res) => {
 
 app.use(express.json({ limit: '10mb' }));
 
+app.use('/api', authMiddleware);
+app.use('/api/auth/login', rateLimiter);
+
 io.on('connection', (socket) => {
     console.log('📱 Dispositivo conectado:', socket.id);
     
@@ -115,7 +132,7 @@ async function initTasaBCV() {
 
 if (!process.env.VITEST_DB) initTasaBCV();
 
-const deps = { getDb, setModoDemo, upload, bcrypt, obtenerTasaBCV, path, fs, appRoot };
+const deps = { getDb, setModoDemo, upload, bcrypt, obtenerTasaBCV, path, fs, appRoot, crearToken, destruirToken };
 
 require('./routes/auth.routes')(app, io, deps);
 require('./routes/mesas.routes')(app, io, deps);

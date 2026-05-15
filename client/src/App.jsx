@@ -1,23 +1,33 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { RestaurantProvider } from './contexts/RestaurantContext';
 import { ToastProvider } from './contexts/ToastContext';
 import Navbar from './components/Navbar';
 import UpdateBanner from './components/UpdateBanner';
+import SocketStatus from './components/SocketStatus';
 import ErrorBoundary from './components/ErrorBoundary';
 import LockScreen from './components/LockScreen';
-import LoginPage from './pages/LoginPage';
-import MesasPage from './pages/MesasPage';
-import CocinaPage from './pages/CocinaPage';
-import CajaPage from './pages/CajaPage';
-import DashboardPage from './pages/DashboardPage';
-import AdminPage from './pages/AdminPage';
-import HistorialPage from './pages/HistorialPage';
-import MiHistorialPage from './pages/MiHistorialPage';
-import ManualPage from './pages/ManualPage';
-import SoportePage from './pages/SoportePage';
 import { puedeVerConfig } from './services/api';
+
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const MesasPage = lazy(() => import('./pages/MesasPage'));
+const CocinaPage = lazy(() => import('./pages/CocinaPage'));
+const CajaPage = lazy(() => import('./pages/CajaPage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const AdminPage = lazy(() => import('./pages/AdminPage'));
+const HistorialPage = lazy(() => import('./pages/HistorialPage'));
+const MiHistorialPage = lazy(() => import('./pages/MiHistorialPage'));
+const ManualPage = lazy(() => import('./pages/ManualPage'));
+const SoportePage = lazy(() => import('./pages/SoportePage'));
+
+function PageLoader() {
+  return (
+    <div className="h-full flex items-center justify-center bg-gray-50">
+      <div className="w-10 h-10 border-2 border-primary-400 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+}
 
 const ROL_ACCESS = {
   '/mesas': ['dueno', 'admin', 'gerente', 'cajero', 'mesonero', 'cocina'],
@@ -90,7 +100,7 @@ function AppRoutes() {
   return (
     <div className="h-[100dvh] flex bg-gray-100">
       <Routes>
-        <Route path="/login" element={user ? <Navigate to="/mesas" replace /> : <LoginPage />} />
+        <Route path="/login" element={user ? <Navigate to="/mesas" replace /> : <Suspense fallback={<PageLoader />}><LoginPage /></Suspense>} />
         <Route
           path="/*"
           element={
@@ -102,22 +112,24 @@ function AppRoutes() {
                 {/* Contenido principal */}
                 <main className="flex-1 flex flex-col overflow-y-auto pb-16 lg:pb-0 min-h-0">
                   <div className="flex-1 overflow-y-auto w-full relative">
-                    <Routes>
-                      <Route path="/" element={<Navigate to="/mesas" replace />} />
-                      <Route path="/mesas" element={<MesasPage />} />
-                      <Route path="/mi-historial" element={<MiHistorialPage />} />
-                      <Route path="/cocina" element={<CocinaPage />} />
-                      <Route path="/caja" element={<CajaPage />} />
-                      <Route path="/dashboard" element={<DashboardPage />} />
-                      <Route path="/historial" element={<HistorialPage />} />
-                      <Route path="/manual" element={<ManualPage />} />
-                      <Route path="/soporte" element={<SoportePage />} />
-                      <Route path="/admin" element={
-                        <AdminRoute>
-                          <AdminPage />
-                        </AdminRoute>
-                      } />
-                    </Routes>
+                    <Suspense fallback={<PageLoader />}>
+                      <Routes>
+                        <Route path="/" element={<Navigate to="/mesas" replace />} />
+                        <Route path="/mesas" element={<MesasPage />} />
+                        <Route path="/mi-historial" element={<MiHistorialPage />} />
+                        <Route path="/cocina" element={<CocinaPage />} />
+                        <Route path="/caja" element={<CajaPage />} />
+                        <Route path="/dashboard" element={<DashboardPage />} />
+                        <Route path="/historial" element={<HistorialPage />} />
+                        <Route path="/manual" element={<ManualPage />} />
+                        <Route path="/soporte" element={<SoportePage />} />
+                        <Route path="/admin" element={
+                          <AdminRoute>
+                            <AdminPage />
+                          </AdminRoute>
+                        } />
+                      </Routes>
+                    </Suspense>
                   </div>
                 </main>
                 <UpdateBanner />
@@ -137,6 +149,7 @@ export default function App() {
         <AuthProvider>
           <RestaurantProvider>
             <ToastProvider>
+              <SocketStatus />
               <AppRoutes />
             </ToastProvider>
           </RestaurantProvider>

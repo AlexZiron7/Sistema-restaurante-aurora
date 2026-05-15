@@ -15,7 +15,7 @@ const METODO_LABELS = {
 
 export default function MiHistorialPage() {
   const { user } = useAuth();
-  const socket = useSocket();
+  const { socket } = useSocket();
   const { success } = useToast();
   const [pedidos, setPedidos] = useState([]);
   const [stats, setStats] = useState({});

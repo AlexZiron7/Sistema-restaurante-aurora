@@ -320,7 +320,7 @@ const PanelDetalle = ({
 export default function CajaPage() {
   const { mesas, fetchMesas, updateEstadoMesa, formatearPrecio } = useRestaurant();
   const { success, error } = useToast();
-  const socket = useSocket();
+  const { socket } = useSocket();
 
   const [selectedMesa, setSelectedMesa] = useState(null);
   const [items, setItems] = useState([]);

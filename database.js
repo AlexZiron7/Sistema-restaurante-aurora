@@ -127,8 +127,9 @@ function initDB(dbInstance, isDemo = false) {
                 dbInstance.run("INSERT INTO usuarios (usuario, pin_acceso, nombre, rol) VALUES (?, ?, ?, ?)", ['admin', hash('1234'), 'Administrador Demo', 'admin']);
                 dbInstance.run("INSERT INTO usuarios (usuario, pin_acceso, nombre, rol) VALUES (?, ?, ?, ?)", ['mesonero1', hash('3333'), 'Mesonero 1', 'mesonero']);
             } else {
-                // En PRODUCCIÓN solo el dueño con pin inicial que debe cambiarse
                 dbInstance.run("INSERT INTO usuarios (usuario, pin_acceso, nombre, rol) VALUES (?, ?, ?, ?)", ['dueno', hash('0000'), 'Dueño del Restaurante', 'dueno']);
+                dbInstance.run("INSERT INTO usuarios (usuario, pin_acceso, nombre, rol) VALUES (?, ?, ?, ?)", ['admin', hash('1234'), 'Administrador', 'admin']);
+                dbInstance.run("INSERT INTO usuarios (usuario, pin_acceso, nombre, rol) VALUES (?, ?, ?, ?)", ['mesonero1', hash('3333'), 'Mesonero 1', 'mesonero']);
             }
             
             for (let i = 1; i <= 10; i++) {
@@ -137,32 +138,30 @@ function initDB(dbInstance, isDemo = false) {
         }
     });
 
-    // --- Datos de Negocio (Solo en DEMO) ---
-    if (isDemo) {
-        dbInstance.get("SELECT COUNT(*) as count FROM categorias", (err, row) => {
-            if (row && row.count === 0) {
-                dbInstance.run(`INSERT INTO categorias (nombre, icono) VALUES ('Bebidas', '🥤')`);
-                dbInstance.run(`INSERT INTO categorias (nombre, icono) VALUES ('Entradas', '🥗')`);
-                dbInstance.run(`INSERT INTO categorias (nombre, icono) VALUES ('Principales', '🍽️')`);
-                dbInstance.run(`INSERT INTO categorias (nombre, icono) VALUES ('Postres', '🍰')`);
-            }
-        });
+    // --- Datos de Negocio ---
+    dbInstance.get("SELECT COUNT(*) as count FROM categorias", (err, row) => {
+        if (row && row.count === 0) {
+            dbInstance.run(`INSERT INTO categorias (nombre, icono) VALUES ('Bebidas', '🥤')`);
+            dbInstance.run(`INSERT INTO categorias (nombre, icono) VALUES ('Entradas', '🥗')`);
+            dbInstance.run(`INSERT INTO categorias (nombre, icono) VALUES ('Principales', '🍽️')`);
+            dbInstance.run(`INSERT INTO categorias (nombre, icono) VALUES ('Postres', '🍰')`);
+        }
+    });
 
-        dbInstance.get("SELECT COUNT(*) as count FROM productos", (err, row) => {
-            if (row && row.count === 0) {
-                const productos = [
-                    ['Café americano', 2.50, 1, 'Café negro intenso preparado con granos seleccionados.'],
-                    ['Café con leche', 3.00, 1, 'Equilibrio perfecto entre café expresso y leche cremosa.'],
-                    ['Hamburguesa', 8.50, 3, 'Carne de res, queso, lechuga y tomate en pan artesanal.'],
-                    ['Pizza Margarita', 12.00, 3, 'Salsa de tomate, mozzarella y albahaca fresca.'],
-                    ['Tiramisú', 8.00, 4, 'Postre italiano clásico con mascarpone y café.'],
-                ];
-                const stmt = dbInstance.prepare(`INSERT INTO productos (nombre, precio_usd, id_categoria, descripcion) VALUES (?, ?, ?, ?)`);
-                productos.forEach(p => stmt.run(...p));
-                stmt.finalize();
-            }
-        });
-    }
+    dbInstance.get("SELECT COUNT(*) as count FROM productos", (err, row) => {
+        if (row && row.count === 0) {
+            const productos = [
+                ['Café americano', 2.50, 1, 'Café negro intenso preparado con granos seleccionados.'],
+                ['Café con leche', 3.00, 1, 'Equilibrio perfecto entre café expresso y leche cremosa.'],
+                ['Hamburguesa', 8.50, 3, 'Carne de res, queso, lechuga y tomate en pan artesanal.'],
+                ['Pizza Margarita', 12.00, 3, 'Salsa de tomate, mozzarella y albahaca fresca.'],
+                ['Tiramisú', 8.00, 4, 'Postre italiano clásico con mascarpone y café.'],
+            ];
+            const stmt = dbInstance.prepare(`INSERT INTO productos (nombre, precio_usd, id_categoria, descripcion) VALUES (?, ?, ?, ?)`);
+            productos.forEach(p => stmt.run(...p));
+            stmt.finalize();
+        }
+    });
 
     // --- Configuración Global ---
     dbInstance.get("SELECT COUNT(*) as count FROM config", (err, row) => {

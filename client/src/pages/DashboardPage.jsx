@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { TrendingUp, DollarSign, Users, LayoutGrid, ShoppingBag, RefreshCw, Smartphone, CreditCard, Banknote, Globe, Award, ArrowUpRight, FileDown } from 'lucide-react';
 import { useRestaurant } from '../contexts/RestaurantContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 
 
 const METODO_COLORS = {
@@ -69,6 +70,7 @@ function MiniBarChart({ data }) {
 export default function DashboardPage() {
   const { mesas, loading: mesasLoading, fetchMesas } = useRestaurant();
   const { user } = useAuth();
+  const { error } = useToast();
   const [statsHoy, setStatsHoy] = useState(null);
   const [statsSemana, setStatsSemana] = useState([]);
   const [statsMetodos, setStatsMetodos] = useState([]);
@@ -184,7 +186,7 @@ export default function DashboardPage() {
 
       doc.save(`Reporte_Completo_${hoy}.pdf`);
     } catch (e) {
-      console.error('Error al exportar reporte completo', e);
+      error('Error al exportar reporte completo');
     }
   };
 
@@ -201,7 +203,7 @@ export default function DashboardPage() {
       setMesoneros(mes);
       setStatsMetodos(hoy.metodos_pago || []);
     } catch (e) {
-      console.error(e);
+      error('Error al cargar estadísticas');
     }
     setLoadingStats(false);
   };

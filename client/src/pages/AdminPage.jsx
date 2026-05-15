@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Users, UtensilsCrossed, Settings, RefreshCw, History, Calendar, DollarSign, Receipt, FileText, FileSpreadsheet, File } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 import { api } from '../services/api';
 import { exportToPDF, exportToExcel, exportToCSV } from '../utils/exportUtils';
 import UsuariosPage from './UsuariosPage';
@@ -9,6 +10,7 @@ import ConfigPage from './ConfigPage';
 
 function HistorialMesoneros() {
   const { user } = useAuth();
+  const { error } = useToast();
   const [mesoneros, setMesoneros] = useState([]);
   const [selectedMesonero, setSelectedMesonero] = useState(null);
   const [historial, setHistorial] = useState(null);
@@ -19,13 +21,17 @@ function HistorialMesoneros() {
   const isAdmin = user?.rol === 'dueno' || user?.rol === 'admin';
 
   useEffect(() => {
-    api.getMesoneros().then(setMesoneros);
+    api.getMesoneros().then(setMesoneros).catch(() => error('Error al cargar mesoneros'));
   }, []);
 
   const cargarHistorial = async (mesoneroId) => {
     setLoading(true);
-    const data = await api.getHistorialMesonero(mesoneroId, { desde, hasta });
-    setHistorial(data);
+    try {
+      const data = await api.getHistorialMesonero(mesoneroId, { desde, hasta });
+      setHistorial(data);
+    } catch {
+      error('Error al cargar historial');
+    }
     setLoading(false);
   };
 
@@ -46,11 +52,11 @@ function HistorialMesoneros() {
     dataKey: 'pedidos'
   };
 
-  const exportar = (formato) => {
+  const exportar = async (formato) => {
     if (!historial) return;
     const data = { desde, hasta, pedidos: historial.pedidos, resumen: historial.stats };
     if (formato === 'pdf') exportToPDF(data, `Historial_${historial.mesonero}`, columnas);
-    else if (formato === 'excel') exportToExcel(data, `Historial_${historial.mesonero}`, columnas);
+    else if (formato === 'excel') await exportToExcel(data, `Historial_${historial.mesonero}`, columnas);
     else if (formato === 'csv') exportToCSV(data, `Historial_${historial.mesonero}`, columnas);
   };
 

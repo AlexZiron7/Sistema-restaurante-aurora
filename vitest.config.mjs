@@ -7,6 +7,6 @@ export default defineConfig({
     env: {
       VITEST_DB: 'memory',
     },
-    exclude: ['client/**', 'node_modules/**'],
+    exclude: ['client/**', 'node_modules/**', '.kilo/**'],
   },
 });

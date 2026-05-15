@@ -16,8 +16,8 @@ export function useSocket() {
         reconnectionDelay: 1000,
         reconnectionDelayMax: 5000
       });
-      socketRef.current = socket;
     }
+    socketRef.current = socket;
 
     const s = socketRef.current;
 
@@ -35,5 +35,5 @@ export function useSocket() {
     };
   }, []);
 
-  return socketRef.current;
+  return { socket: socketRef.current, connected };
 }

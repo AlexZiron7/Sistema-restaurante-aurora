@@ -13,7 +13,7 @@ module.exports = function (app, io, deps) {
   }
 
   function isSafeFilename(name) {
-    return /^[\w\-.]+$/.test(name) && !name.includes('..');
+    return /^[\w\-.]+$/.test(name) && !name.includes('..') && !name.includes('/') && !name.includes('\\') && !name.includes(':');
   }
 
   function ensureDir() {

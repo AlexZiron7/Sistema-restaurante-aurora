@@ -3,6 +3,17 @@ import { RefreshCw, ChefHat, Check, Clock, Trash2, Printer, Volume2, VolumeX } f
 import { useRestaurant } from '../contexts/RestaurantContext';
 import { useSocket } from '../hooks/useSocket';
 import { useToast } from '../contexts/ToastContext';
+import { api } from '../services/api';
+
+const escapeHtml = (str) => {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+};
 
 const playNotificationSound = () => {
   try {
@@ -21,7 +32,7 @@ const playNotificationSound = () => {
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.3);
   } catch (e) {
-    console.log('Audio not supported');
+    // Audio not supported
   }
 };
 
@@ -37,7 +48,7 @@ const imprimirTicketCocina = (mesa, items, mesoneroNombre) => {
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Orden Cocina - Mesa ${mesa.numero_mesa}</title>
+      <title>Orden Cocina - Mesa ${escapeHtml(String(mesa.numero_mesa))}</title>
       <style>
         @page { margin: 0; size: 58mm auto; }
         body { 
@@ -62,17 +73,17 @@ const imprimirTicketCocina = (mesa, items, mesoneroNombre) => {
       <div class="header">
         <strong>🍽️ PEDIDO</strong>
       </div>
-      <div class="mesa-num">MESA #${mesa.numero_mesa}</div>
+      <div class="mesa-num">MESA #${escapeHtml(String(mesa.numero_mesa))}</div>
       <div class="divider"></div>
       ${items.map((item, idx) => `
         <div class="item">
-          <span class="item-num">${idx + 1}.</span> ${item.nombre_producto}
-          ${item.notas_especiales ? `<div class="notas">⚠️ ${item.notas_especiales}</div>` : ''}
+          <span class="item-num">${idx + 1}.</span> ${escapeHtml(item.nombre_producto)}
+          ${item.notas_especiales ? `<div class="notas">⚠️ ${escapeHtml(item.notas_especiales)}</div>` : ''}
         </div>
       `).join('')}
       <div class="divider"></div>
       <div class="mesonero">
-        👤 ${mesoneroNombre || 'Mesonero'}
+        👤 ${escapeHtml(mesoneroNombre || 'Mesonero')}
       </div>
       <script>window.print(); window.close();</script>
     </body>
@@ -83,7 +94,7 @@ const imprimirTicketCocina = (mesa, items, mesoneroNombre) => {
 
 export default function CocinaPage() {
   const { mesas, fetchMesas, isMesaCerrada, setMesasCerradas } = useRestaurant();
-  const socket = useSocket();
+  const { socket } = useSocket();
   const { info } = useToast();
   
   const [pedidosCocina, setPedidosCocina] = useState([]);
@@ -95,21 +106,20 @@ export default function CocinaPage() {
 
   const cargarPedidos = useCallback(async () => {
     try {
-      const response = await fetch('/api/cocina/pedidos-pendientes');
-      let pedidos = await response.json();
+      const pedidos = await api.getCocinaPedidosPendientes();
       
-      pedidos = pedidos.filter(p => !mesasOcultas.has(p.mesa.id));
+      const filtrados = pedidos.filter(p => !mesasOcultas.has(p.mesa.id));
       
       const cantidadAnterior = pedidosPreviosRef.current;
-      pedidosPreviosRef.current = pedidos.length;
+      pedidosPreviosRef.current = filtrados.length;
       
-      if (cantidadAnterior > 0 && pedidos.length > cantidadAnterior && sonidoActivo) {
+      if (cantidadAnterior > 0 && filtrados.length > cantidadAnterior && sonidoActivo) {
         playNotificationSound();
       }
       
-      setPedidosCocina(pedidos);
+      setPedidosCocina(filtrados);
     } catch (err) {
-      console.error('Error cargando pedidos:', err);
+      // Error cargando pedidos
     }
     setLoading(false);
   }, [mesasOcultas, sonidoActivo]);
@@ -160,11 +170,13 @@ export default function CocinaPage() {
   }, []);
 
   const handleCompletar = async (mesaId) => {
-    await fetch(`/api/cocina/mesas/${mesaId}/listo`, {
-      method: 'POST'
-    });
-    fetchMesas();
-    cargarPedidos();
+    try {
+      await api.marcarPedidoListo(mesaId);
+      fetchMesas();
+      cargarPedidos();
+    } catch (err) {
+      // Error al marcar pedido como listo
+    }
   };
 
   const handleDescartar = (mesaId) => {

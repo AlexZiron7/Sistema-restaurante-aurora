@@ -128,6 +128,34 @@ module.exports = function (app, io, deps) {
     });
   });
 
+  function getHistorialMesonero(db, nombreMesonero, fechaDesde, fechaHasta, callback) {
+    db.get(`
+          SELECT 
+              COUNT(*) as pedidos,
+              COALESCE(SUM(total), 0) as ventas,
+              COALESCE(SUM(propina), 0) as propinas,
+              COUNT(DISTINCT numero_mesa) as mesas_atendidas
+          FROM pedidos
+          WHERE nombre_mesonero = ? AND estado = 'pagado' 
+          AND date(fecha_cierre) BETWEEN ? AND ?
+      `, [nombreMesonero, fechaDesde, fechaHasta], (err2, stats) => {
+      if (err2) return callback(err2);
+
+      db.all(`
+              SELECT 
+                  p.*,
+                  (SELECT GROUP_CONCAT(ip.nombre_producto, ', ') FROM items_pedido ip WHERE ip.id_pedido = p.id) as items_resumen
+              FROM pedidos p
+              WHERE p.nombre_mesonero = ? AND p.estado = 'pagado'
+              AND date(p.fecha_cierre) BETWEEN ? AND ?
+              ORDER BY p.fecha_cierre DESC
+          `, [nombreMesonero, fechaDesde, fechaHasta], (err3, pedidos) => {
+        if (err3) return callback(err3);
+        callback(null, { mesonero: nombreMesonero, stats, pedidos });
+      });
+    });
+  }
+
   app.get('/api/mesoneros/:id/historial', (req, res) => {
     const db = getDb();
     const { id } = req.params;
@@ -135,51 +163,19 @@ module.exports = function (app, io, deps) {
     const fechaDesde = desde || new Date().toISOString().split('T')[0];
     const fechaHasta = hasta || new Date().toISOString().split('T')[0];
 
-    db.get(`
-        SELECT nombre FROM usuarios WHERE id = ?
-    `, [id], (err, usuario) => {
+    db.get("SELECT nombre FROM usuarios WHERE id = ?", [id], (err, usuario) => {
       if (err) return res.status(500).json({ error: err.message });
       if (!usuario) return res.status(404).json({ error: 'Mesonero no encontrado' });
-
-      const nombreMesonero = usuario.nombre;
-
-      db.get(`
-            SELECT 
-                COUNT(*) as pedidos,
-                COALESCE(SUM(total), 0) as ventas,
-                COALESCE(SUM(propina), 0) as propinas,
-                COUNT(DISTINCT numero_mesa) as mesas_atendidas
-            FROM pedidos
-            WHERE nombre_mesonero = ? AND estado = 'pagado' 
-            AND date(fecha_cierre) BETWEEN ? AND ?
-        `, [nombreMesonero, fechaDesde, fechaHasta], (err2, stats) => {
-        if (err2) return res.status(500).json({ error: err2.message });
-
-        db.all(`
-                SELECT 
-                    p.*,
-                    (SELECT GROUP_CONCAT(ip.nombre_producto, ', ') FROM items_pedido ip WHERE ip.id_pedido = p.id) as items_resumen
-                FROM pedidos p
-                WHERE p.nombre_mesonero = ? AND p.estado = 'pagado'
-                AND date(p.fecha_cierre) BETWEEN ? AND ?
-                ORDER BY p.fecha_cierre DESC
-            `, [nombreMesonero, fechaDesde, fechaHasta], (err3, pedidos) => {
-          if (err3) return res.status(500).json({ error: err3.message });
-
-          res.json({
-            mesonero: nombreMesonero,
-            stats,
-            pedidos
-          });
-        });
+      getHistorialMesonero(db, usuario.nombre, fechaDesde, fechaHasta, (err, data) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(data);
       });
     });
   });
 
   app.get('/api/mesoneros/mi-historial', (req, res) => {
     const db = getDb();
-    const { id_usuario } = req.query;
-    const { desde, hasta } = req.query;
+    const { id_usuario, desde, hasta } = req.query;
     const fechaDesde = desde || new Date().toISOString().split('T')[0];
     const fechaHasta = hasta || new Date().toISOString().split('T')[0];
 
@@ -187,43 +183,12 @@ module.exports = function (app, io, deps) {
       return res.status(400).json({ error: 'ID de usuario requerido' });
     }
 
-    db.get(`
-        SELECT nombre FROM usuarios WHERE id = ?
-    `, [id_usuario], (err, usuario) => {
+    db.get("SELECT nombre FROM usuarios WHERE id = ?", [id_usuario], (err, usuario) => {
       if (err) return res.status(500).json({ error: err.message });
       if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
-
-      const nombreMesonero = usuario.nombre;
-
-      db.get(`
-            SELECT 
-                COUNT(*) as pedidos,
-                COALESCE(SUM(total), 0) as ventas,
-                COALESCE(SUM(propina), 0) as propinas,
-                COUNT(DISTINCT numero_mesa) as mesas_atendidas
-            FROM pedidos
-            WHERE nombre_mesonero = ? AND estado = 'pagado' 
-            AND date(fecha_cierre) BETWEEN ? AND ?
-        `, [nombreMesonero, fechaDesde, fechaHasta], (err2, stats) => {
-        if (err2) return res.status(500).json({ error: err2.message });
-
-        db.all(`
-                SELECT 
-                    p.*,
-                    (SELECT GROUP_CONCAT(ip.nombre_producto, ', ') FROM items_pedido ip WHERE ip.id_pedido = p.id) as items_resumen
-                FROM pedidos p
-                WHERE p.nombre_mesonero = ? AND p.estado = 'pagado'
-                AND date(p.fecha_cierre) BETWEEN ? AND ?
-                ORDER BY p.fecha_cierre DESC
-            `, [nombreMesonero, fechaDesde, fechaHasta], (err3, pedidos) => {
-          if (err3) return res.status(500).json({ error: err3.message });
-
-          res.json({
-            mesonero: nombreMesonero,
-            stats,
-            pedidos
-          });
-        });
+      getHistorialMesonero(db, usuario.nombre, fechaDesde, fechaHasta, (err, data) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(data);
       });
     });
   });

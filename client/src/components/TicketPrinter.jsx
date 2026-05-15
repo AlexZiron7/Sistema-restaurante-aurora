@@ -2,6 +2,16 @@ import { Printer } from 'lucide-react';
 import { api } from '../services/api';
 import { useToast } from '../contexts/ToastContext';
 
+const escapeHtml = (str) => {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+};
+
 export default function TicketPrinter({ pedidoId, mesaNumero, className = '' }) {
   const { success, error } = useToast();
 
@@ -21,7 +31,7 @@ export default function TicketPrinter({ pedidoId, mesaNumero, className = '' }) 
         <!DOCTYPE html>
         <html>
         <head>
-          <title>Ticket - Mesa ${mesaNumero}</title>
+          <title>Ticket - Mesa ${escapeHtml(String(mesaNumero))}</title>
           <style>
             @page { margin: 0; size: 58mm auto; }
             body { 
@@ -46,13 +56,13 @@ export default function TicketPrinter({ pedidoId, mesaNumero, className = '' }) 
             <strong>AURORA RES</strong>
           </div>
           <div class="divider"></div>
-          <div class="row"><span>Mesa:</span><span>#${mesaNumero}</span></div>
-          <div class="row"><span>Fecha:</span><span>${ticket.fecha}</span></div>
-          <div class="row"><span>Mesonero:</span><span>${ticket.mesonero_nombre}</span></div>
+          <div class="row"><span>Mesa:</span><span>#${escapeHtml(String(mesaNumero))}</span></div>
+          <div class="row"><span>Fecha:</span><span>${escapeHtml(ticket.fecha)}</span></div>
+          <div class="row"><span>Mesonero:</span><span>${escapeHtml(ticket.mesonero_nombre)}</span></div>
           <div class="divider"></div>
           ${ticket.items.map(item => `
             <div class="row">
-              <span>${item.nombre_producto}</span>
+              <span>${escapeHtml(item.nombre_producto)}</span>
               <span>$${parseFloat(item.precio).toFixed(2)}</span>
             </div>
           `).join('')}
@@ -76,7 +86,6 @@ export default function TicketPrinter({ pedidoId, mesaNumero, className = '' }) 
       success('Ticket enviado a imprimir');
     } catch (err) {
       error('Error al imprimir ticket');
-      console.error(err);
     }
   };
 

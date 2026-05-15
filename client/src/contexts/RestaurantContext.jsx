@@ -15,7 +15,7 @@ export function RestaurantProvider({ children }) {
     mostrar_precios_bs: true
   });
   const [tasaBCV, setTasaBCV] = useState(0);
-  const socket = useSocket();
+  const { socket } = useSocket();
 
   const fetchConfig = useCallback(async () => {
     try {

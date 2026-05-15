@@ -1,6 +1,5 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import * as XLSX from 'xlsx';
 
 export const exportToPDF = (data, titulo, columnas) => {
   const doc = new jsPDF();
@@ -49,7 +48,8 @@ export const exportToPDF = (data, titulo, columnas) => {
   doc.save(`${titulo.replace(/\s+/g, '_')}_${data.desde}_${data.hasta}.pdf`);
 };
 
-export const exportToExcel = (data, titulo, columnas) => {
+export const exportToExcel = async (data, titulo, columnas) => {
+  const XLSX = await import('xlsx');
   const wsData = [];
   
   wsData.push([titulo]);

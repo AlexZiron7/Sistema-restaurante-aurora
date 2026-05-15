@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { History, Search, Calendar, Filter, ChevronDown, ChevronUp, Smartphone, CreditCard, Banknote, Globe, DollarSign, Download, RefreshCw, FileText, FileSpreadsheet, File } from 'lucide-react';
 import { exportToPDF, exportToExcel, exportToCSV } from '../utils/exportUtils';
+import { useToast } from '../contexts/ToastContext';
 import { api } from '../services/api';
 
 const METODOS = [
@@ -85,6 +86,7 @@ function DatosPago({ datosPago, metodo }) {
 }
 
 export default function HistorialPage() {
+  const { error } = useToast();
   const hoy = new Date().toISOString().split('T')[0];
   const [desde, setDesde] = useState(hoy);
   const [hasta, setHasta] = useState(hoy);
@@ -121,12 +123,12 @@ export default function HistorialPage() {
       if (formato === 'pdf') {
         exportToPDF(data, 'Reporte de Ventas', columnasVentas);
       } else if (formato === 'excel') {
-        exportToExcel(data, 'Reporte de Ventas', columnasVentas);
+        await exportToExcel(data, 'Reporte de Ventas', columnasVentas);
       } else if (formato === 'csv') {
         exportToCSV(data, 'Reporte de Ventas', columnasVentas);
       }
     } catch (err) {
-      console.error('Error exportando:', err);
+      error('Error al exportar reporte de ventas');
     }
     setExportLoading(false);
   };
@@ -149,12 +151,12 @@ export default function HistorialPage() {
       if (formato === 'pdf') {
         exportToPDF(data, 'Reporte de Productos', columnas);
       } else if (formato === 'excel') {
-        exportToExcel(data, 'Reporte de Productos', columnas);
+        await exportToExcel(data, 'Reporte de Productos', columnas);
       } else if (formato === 'csv') {
         exportToCSV(data, 'Reporte de Productos', columnas);
       }
     } catch (err) {
-      console.error('Error exportando:', err);
+      error('Error al exportar reporte de productos');
     }
     setExportLoading(false);
   };
@@ -178,12 +180,12 @@ export default function HistorialPage() {
       if (formato === 'pdf') {
         exportToPDF(data, 'Reporte de Mesoneros', columnas);
       } else if (formato === 'excel') {
-        exportToExcel(data, 'Reporte de Mesoneros', columnas);
+        await exportToExcel(data, 'Reporte de Mesoneros', columnas);
       } else if (formato === 'csv') {
         exportToCSV(data, 'Reporte de Mesoneros', columnas);
       }
     } catch (err) {
-      console.error('Error exportando:', err);
+      error('Error al exportar reporte de mesoneros');
     }
     setExportLoading(false);
   };
@@ -205,7 +207,7 @@ export default function HistorialPage() {
       setPedidos(data.pedidos || []);
       setTotalRegistros(data.total || 0);
     } catch (e) {
-      console.error(e);
+      error('Error al cargar historial');
     }
     setLoading(false);
   };
@@ -223,7 +225,9 @@ export default function HistorialPage() {
       const data = await res.json();
       setDetalle(prev => ({ ...prev, [id]: data }));
       setExpandido(id);
-    } catch (e) {}
+    } catch (e) {
+      error('Error al cargar detalle del pedido');
+    }
   };
 
   const totalPaginas = Math.ceil(totalRegistros / POR_PAGINA);

@@ -23,7 +23,7 @@ import { useState } from 'react';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
-  const socket = useSocket();
+  const { socket } = useSocket();
   const { alertas, marcarAlertaLeida } = useRestaurant();
   const [showAlertas, setShowAlertas] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
