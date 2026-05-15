@@ -11,16 +11,15 @@ const SECCIONES = [
 
 **¿Cómo instalar en tablets y teléfonos?**
 1. Conecta la tablet/teléfono al mismo WiFi que la computadora principal.
-2. Abre el navegador (Chrome o Safari) y entra a la dirección que te muestra la consola al iniciar el servidor (ej: \`http://192.168.1.x:5173\`).
+2. Abre el navegador (Chrome o Safari) y entra a la dirección que te muestra la consola al iniciar el servidor (ej: \`http://192.168.1.x:3000\`).
 3. Te aparecerá un mensaje inferior o en el menú del navegador la opción de **"Instalar aplicación"** o **"Añadir a pantalla de inicio"**. Al hacerlo, funcionará como una App nativa.
 
 Todos los dispositivos se sincronizan automáticamente. Los cambios que hace un mesonero se ven al instante en la cocina y en la caja.
 
-**Roles del sistema:**
-• 🧑‍💼 Dueño / Admin: Acceso total, configuración, estadísticas
-• 👨‍💼 Gerente: Reportes, menú y gestión de personal
-• 💰 Cajero: Cobros, historial de caja
-• 🧑‍🍳 Mesonero: Mesas y pedidos`
+• 🧑‍💼 **Dueño / Admin**: Acceso total a estadísticas, configuración de menú, usuarios y caja.
+• 💰 **Cajero / Administrador**: Gestión de cobros, cierre de mesas y revisión de historial.
+• 🧑‍🍳 **Mesonero**: Visualización de mesas, toma de pedidos y envío a cocina.
+• 🍳 **Cocina**: Recepción de comandas en tiempo real y aviso de platos listos.`
   },
   {
     id: 'mesas',

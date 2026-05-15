@@ -4,6 +4,17 @@ const http = require('http');
 async function obtenerTasaBCV() {
     const fuentes = [
         {
+            nombre: 'dolar-api',
+            url: 'https://ve.dolarapi.com/v1/dolares/oficial',
+            parse: (text) => {
+                try {
+                    const data = JSON.parse(text);
+                    if (data && data.promedio) return parseFloat(data.promedio);
+                } catch {}
+                return null;
+            }
+        },
+        {
             nombre: 'bcv-directo',
             url: 'https://www.bcv.org.ve/',
             parse: (text) => {
@@ -17,31 +28,10 @@ async function obtenerTasaBCV() {
                     const match = text.match(pattern);
                     if (match) {
                         const tasaStr = match[1] || match[0];
+                        // Limpiar mejor el string: quitar espacios, cambiar coma por punto
                         const cleaned = tasaStr.replace(/[^\d.,]/g, '').replace(',', '.');
                         const tasa = parseFloat(cleaned);
-                        if (!isNaN(tasa) && tasa > 10 && tasa < 200) {
-                            return tasa;
-                        }
-                    }
-                }
-                return null;
-            }
-        },
-        {
-            nombre: 'monitor-dolar',
-            url: 'https://monitordolarvenezuela.com/',
-            parse: (text) => {
-                const patterns = [
-                    /Bs\.?\s*([\d.,]+)/,
-                    /Tasa\s*(?:BCV)?:?\s*([\d.,]+)/i,
-                    /Promedio[:\s]*([\d.,]+)/i
-                ];
-                for (const pattern of patterns) {
-                    const match = text.match(pattern);
-                    if (match) {
-                        let tasaStr = match[1].replace(/\./g, '').replace(',', '.');
-                        const tasa = parseFloat(tasaStr);
-                        if (!isNaN(tasa) && tasa > 10 && tasa < 200) {
+                        if (!isNaN(tasa) && tasa > 20 && tasa < 150) {
                             return tasa;
                         }
                     }
@@ -62,21 +52,6 @@ async function obtenerTasaBCV() {
                 return null;
             }
         },
-        {
-            nombre: 'pydolar',
-            url: 'https://pydolarvenezuela-api.vercel.app/api/v1/dollar/page?page=bcv',
-            parse: (text) => {
-                try {
-                    const data = JSON.parse(text);
-                    // Buscar en el array de monitores el que diga BCV
-                    if (data.monitors) {
-                        const bcv = Object.values(data.monitors).find(m => m.name && m.name.includes('BCV'));
-                        if (bcv) return parseFloat(bcv.price);
-                    }
-                } catch {}
-                return null;
-            }
-        }
     ];
 
     for (const fuente of fuentes) {
