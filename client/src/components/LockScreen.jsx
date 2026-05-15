@@ -1,10 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
 const LockScreen = ({ message, clientId }) => {
+  const [reintentando, setReintentando] = useState(false);
+  const [mensajeActual, setMensajeActual] = useState(message);
   const WHATSAPP_NUMBER = "584127108519"; 
   const whatsappMessage = encodeURIComponent(`Hola Aurora Devs, solicito activación para mi sistema.\n\nMi ID de Hardware es: ${clientId}`);
   const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappMessage}`;
+
+  const handleRetry = async () => {
+    setReintentando(true);
+    try {
+      const res = await fetch('/api/license-status/recheck', { method: 'POST' });
+      const data = await res.json();
+      if (!data.isSystemLocked) {
+        window.location.reload();
+      } else {
+        setMensajeActual(data.lockMessage);
+      }
+    } catch (err) {
+      console.error('Error al reintentar conexión:', err);
+      setMensajeActual('Error de conexión al servidor. Verifique que el sistema esté ejecutándose.');
+    } finally {
+      setReintentando(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#0B0F19] text-white p-6 font-sans">
@@ -35,7 +55,7 @@ const LockScreen = ({ message, clientId }) => {
         </h1>
         
         <p className="text-slate-400 mb-10 text-lg font-medium leading-relaxed">
-          {message || 'El sistema no está activado para este equipo.'}
+          {mensajeActual || 'El sistema no está activado para este equipo.'}
         </p>
         
         <div className="bg-black/40 backdrop-blur-md p-6 rounded-3xl mb-10 border border-white/5">
@@ -55,10 +75,11 @@ const LockScreen = ({ message, clientId }) => {
           </a>
           
           <button 
-            onClick={() => window.location.reload()}
-            className="w-full bg-slate-800/50 text-slate-400 font-bold py-5 rounded-2xl hover:bg-slate-800 hover:text-white transition-all"
+            onClick={handleRetry}
+            disabled={reintentando}
+            className="w-full bg-slate-800/50 text-slate-400 font-bold py-5 rounded-2xl hover:bg-slate-800 hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Ya pagué, reintentar conexión
+            {reintentando ? 'Reintentando...' : 'Ya pagué, reintentar conexión'}
           </button>
         </div>
 

@@ -10,7 +10,7 @@ const { getDb, setModoDemo } = require('../database');
 const bcrypt = require('bcryptjs');
 const { obtenerTasaBCV } = require('../services/tasaBcv');
 const { errorHandler } = require('./middleware/errorHandler');
-const { getLockStatus } = require('./licenseManager');
+const { getLockStatus, checkLicenseStatus } = require('./licenseManager');
 
 const appRoot = process.pkg ? path.dirname(process.execPath) : path.resolve(__dirname, '..');
 
@@ -71,6 +71,13 @@ app.use((req, res, next) => {
 
 // Ruta para que el frontend sepa si debe mostrar la pantalla de bloqueo
 app.get('/api/license-status', (req, res) => {
+    res.json(getLockStatus());
+});
+
+// Ruta para que el frontend reintente la verificación de licencia
+app.post('/api/license-status/recheck', async (req, res) => {
+    console.log('[License] Reintento manual solicitado desde el frontend.');
+    await checkLicenseStatus();
     res.json(getLockStatus());
 });
 // ------------------------------------------
