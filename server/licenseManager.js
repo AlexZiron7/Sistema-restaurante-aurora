@@ -17,56 +17,84 @@ function getHardwareId() {
 }
 
 const CLIENT_ID = getHardwareId();
-
-// URL de control
 const CONTROL_PANEL_URL = 'https://raw.githubusercontent.com/AlexZiron7/Sistema-restaurante-aurora/main/licenses.json';
+const LICENSE_CACHE_FILE = path.join(__dirname, '..', '.license_cache');
 
 let isSystemLocked = false;
 let lockMessage = 'El sistema requiere activación.';
 
+// Días de gracia permitidos sin conexión a internet
+const GRACE_PERIOD_DAYS = 7;
+
 async function checkLicenseStatus() {
     try {
         console.log(`[License] Verificando estado para: ${CLIENT_ID}...`);
-        const response = await axios.get(CONTROL_PANEL_URL, { timeout: 5000 });
+        const response = await axios.get(CONTROL_PANEL_URL, { timeout: 8000 });
         const remoteData = response.data;
 
-        // --- MODELO DE LISTA BLANCA ---
         if (!remoteData || !remoteData[CLIENT_ID]) {
             isSystemLocked = true;
-            lockMessage = 'Esta copia del software no está registrada. Contacte a Aurora Devs.';
-            console.error('⚠️ CLIENTE NO REGISTRADO EN EL PANEL DE CONTROL');
+            lockMessage = 'Esta copia no está registrada. Contacte a soporte.';
             return;
         }
 
         const clientData = remoteData[CLIENT_ID];
         
-        // 1. Verificar estado manual (suspended)
+        // 1. Verificar estado manual
         if (clientData.status === 'suspended') {
             isSystemLocked = true;
             lockMessage = clientData.message || 'Sistema suspendido manualmente.';
             return;
         }
 
-        // 2. Verificar fecha de expiración automática
+        // 2. Verificar fecha de expiración
         if (clientData.expiresAt) {
             const today = new Date();
             const expiryDate = new Date(clientData.expiresAt);
-            
             if (today > expiryDate) {
                 isSystemLocked = true;
-                lockMessage = clientData.message || `Su suscripción venció el ${expiryDate.toLocaleDateString()}.`;
+                lockMessage = clientData.message || `Suscripción vencida el ${expiryDate.toLocaleDateString()}.`;
                 return;
             }
         }
 
-        // Si pasó todas las pruebas
+        // --- EXITO: Guardar fecha de última verificación ---
         isSystemLocked = false;
+        fs.writeFileSync(LICENSE_CACHE_FILE, JSON.stringify({
+            lastCheck: new Date().getTime(),
+            clientId: CLIENT_ID
+        }));
         console.log('✅ Licencia válida y activa.');
 
     } catch (error) {
-        console.error('⚠️ Error de conexión con el servidor de licencias.');
-        // En caso de error de internet, permitimos el acceso por ahora
-        // (Podrías implementar una caché local si quieres ser más estricto)
+        console.warn('⚠️ No se pudo conectar con el servidor de licencias. Verificando caché local...');
+        
+        if (fs.existsSync(LICENSE_CACHE_FILE)) {
+            try {
+                const cache = JSON.parse(fs.readFileSync(LICENSE_CACHE_FILE, 'utf8'));
+                const lastCheck = new Date(cache.lastCheck);
+                const now = new Date();
+                
+                // Calcular días transcurridos
+                const diffTime = Math.abs(now - lastCheck);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays > GRACE_PERIOD_DAYS) {
+                    isSystemLocked = true;
+                    lockMessage = `El sistema requiere conexión a internet para verificar la licencia (Límite: ${GRACE_PERIOD_DAYS} días).`;
+                    console.error('❌ PERIODO DE GRACIA EXCEDIDO');
+                } else {
+                    isSystemLocked = false;
+                    console.log(`✅ Modo Offline (Día ${diffDays}/${GRACE_PERIOD_DAYS}).`);
+                }
+            } catch (e) {
+                isSystemLocked = true;
+            }
+        } else {
+            // No hay caché (primera vez o borrada) y no hay internet
+            isSystemLocked = true;
+            lockMessage = 'Se requiere conexión a internet para la activación inicial.';
+        }
     }
 }
 
