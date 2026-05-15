@@ -21,9 +21,11 @@ async function request(url, options = {}) {
   });
   if (res.status === 401) {
     clearAuthToken();
-    localStorage.removeItem('restaurante_user');
-    localStorage.removeItem('restaurante_token');
-    window.location.href = '/login';
+    if (window.location.pathname !== '/login') {
+      localStorage.removeItem('restaurante_user');
+      localStorage.removeItem('restaurante_token');
+      window.location.href = '/login';
+    }
     throw new Error('Sesión expirada');
   }
   if (!res.ok) {

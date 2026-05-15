@@ -23,8 +23,10 @@ function destruirToken(token) {
 
 function authMiddleware(req, res, next) {
   const publicPaths = ['/ping', '/auth/login', '/license-status', '/license-status/recheck'];
+  const publicGetPaths = ['/config', '/tasa-bcv', '/mesas'];
   const requestPath = req.path || req.url || '';
   if (publicPaths.some(p => requestPath.endsWith(p))) return next();
+  if (req.method === 'GET' && publicGetPaths.some(p => requestPath.endsWith(p))) return next();
 
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
