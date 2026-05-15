@@ -18,7 +18,7 @@ function getHardwareId() {
 
 const appRoot = process.pkg ? path.dirname(process.execPath) : path.resolve(__dirname, '..');
 const CLIENT_ID = getHardwareId();
-const CONTROL_PANEL_URL = 'https://gist.githubusercontent.com/AlexZiron7/deaba1ce68d20be46cd93e9c6d647d77/raw/9fbfc023f565f9e9f436ed3d4d1da1663c72ded9/gistfile1.txt';
+const CONTROL_PANEL_URL = 'https://raw.githubusercontent.com/AlexZiron7/Sistema-restaurante-aurora/main/licenses.json';
 const LICENSE_CACHE_FILE = path.join(appRoot, '.license_cache');
 
 let isSystemLocked = false;
