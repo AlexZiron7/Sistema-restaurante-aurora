@@ -3,6 +3,7 @@ import { TrendingUp, DollarSign, Users, LayoutGrid, ShoppingBag, RefreshCw, Smar
 import { useRestaurant } from '../contexts/RestaurantContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { api } from '../services/api';
 
 
 const METODO_COLORS = {
@@ -194,9 +195,9 @@ export default function DashboardPage() {
     setLoadingStats(true);
     try {
       const [hoy, semana, mes] = await Promise.all([
-        fetch('/api/stats/hoy').then(r => r.json()),
-        fetch('/api/stats/semana').then(r => r.json()),
-        fetch('/api/stats/mesoneros').then(r => r.json()),
+        api.getStatsHoy(),
+        api.getStatsSemana(),
+        api.getStatsMesoneros(),
       ]);
       setStatsHoy(hoy);
       setStatsSemana(semana);
