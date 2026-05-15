@@ -26,8 +26,7 @@ server.listen(PORT, async () => {
             });
         }, 2000);
 
-        // 1. Ejecutar migraciones primero
-        await runMigrations(db.db);
+        // 1. Ejecutar migraciones (Se ejecutan automáticamente en database.js)
 
         // 2. Verificar Licencia (Kill Switch)
         await checkLicenseStatus();
