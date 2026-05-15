@@ -1,5 +1,5 @@
 module.exports = function (app, io, deps) {
-  const { getDb, upload, path, fs } = deps;
+  const { getDb, upload, path, fs, appRoot } = deps;
 
   app.post('/api/productos/:id/imagen', upload.single('imagen'), (req, res) => {
     const db = getDb();
@@ -110,9 +110,21 @@ module.exports = function (app, io, deps) {
     const db = getDb();
     const { id } = req.params;
 
-    db.run("UPDATE productos SET activo = 0 WHERE id = ?", [id], function (err) {
+    db.get("SELECT imagen FROM productos WHERE id = ?", [id], (err, row) => {
       if (err) return res.status(500).json({ error: err.message });
-      res.json({ success: true });
+
+      db.run("UPDATE productos SET activo = 0 WHERE id = ?", [id], function (err) {
+        if (err) return res.status(500).json({ error: err.message });
+
+        if (row?.imagen) {
+          const filePath = path.join(appRoot, 'public', row.imagen);
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+          }
+        }
+
+        res.json({ success: true });
+      });
     });
   });
 };

@@ -10,7 +10,11 @@ export function useSocket() {
   useEffect(() => {
     if (!socket) {
       socket = io(window.location.origin, {
-        transports: ['websocket', 'polling']
+        transports: ['websocket', 'polling'],
+        reconnection: true,
+        reconnectionAttempts: Infinity,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000
       });
       socketRef.current = socket;
     }

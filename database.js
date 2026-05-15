@@ -1,5 +1,6 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const bcrypt = require('bcryptjs');
 const { runMigrations } = require('./server/db/migrate');
 
 const isTestMode = process.env.VITEST_DB === 'memory';
@@ -33,8 +34,8 @@ let dbActual = db;
 
 function initDB(dbInstance) {
     dbInstance.serialize(() => {
-        // Habilitar foreign keys
         dbInstance.run("PRAGMA foreign_keys = ON");
+        dbInstance.run("PRAGMA journal_mode=WAL");
 
     dbInstance.run(`CREATE TABLE IF NOT EXISTS usuarios (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -109,17 +110,24 @@ function initDB(dbInstance) {
         FOREIGN KEY(id_categoria) REFERENCES categorias(id)
     )`);
 
-    // --- Nota: las migraciones de esquema se manejan en server/db/migrate.js ---
+    // --- Índices para mejorar rendimiento ---
+    dbInstance.run("CREATE INDEX IF NOT EXISTS idx_pedidos_fecha_cierre ON pedidos(fecha_cierre)");
+    dbInstance.run("CREATE INDEX IF NOT EXISTS idx_pedidos_estado ON pedidos(estado)");
+    dbInstance.run("CREATE INDEX IF NOT EXISTS idx_pedidos_id_mesa ON pedidos(id_mesa)");
+    dbInstance.run("CREATE INDEX IF NOT EXISTS idx_items_pedido_id_pedido ON items_pedido(id_pedido)");
+    dbInstance.run("CREATE INDEX IF NOT EXISTS idx_items_pedido_estado ON items_pedido(estado)");
+    dbInstance.run("CREATE INDEX IF NOT EXISTS idx_productos_id_categoria ON productos(id_categoria)");
 
     // --- Datos iniciales ---
     dbInstance.get("SELECT COUNT(*) as count FROM usuarios", (err, row) => {
         if (row && row.count === 0) {
-            dbInstance.run(`INSERT INTO usuarios (usuario, pin_acceso, nombre, rol) VALUES ('dueno', '0000', 'Dueño del Restaurante', 'dueno')`);
-            dbInstance.run(`INSERT INTO usuarios (usuario, pin_acceso, nombre, rol) VALUES ('admin', '1234', 'Administrador', 'admin')`);
-            dbInstance.run(`INSERT INTO usuarios (usuario, pin_acceso, nombre, rol) VALUES ('gerente', '1111', 'Gerente', 'gerente')`);
-            dbInstance.run(`INSERT INTO usuarios (usuario, pin_acceso, nombre, rol) VALUES ('caja1', '2222', 'Caja Principal', 'cajero')`);
-            dbInstance.run(`INSERT INTO usuarios (usuario, pin_acceso, nombre, rol) VALUES ('mesonero1', '3333', 'Mesonero 1', 'mesonero')`);
-            dbInstance.run(`INSERT INTO usuarios (usuario, pin_acceso, nombre, rol, estado_activo) VALUES ('demo', '0000', 'Usuario Demo', 'admin', 1)`);
+            const hash = (pin) => bcrypt.hashSync(pin, 10);
+            dbInstance.run("INSERT INTO usuarios (usuario, pin_acceso, nombre, rol) VALUES (?, ?, ?, ?)", ['dueno', hash('0000'), 'Dueño del Restaurante', 'dueno']);
+            dbInstance.run("INSERT INTO usuarios (usuario, pin_acceso, nombre, rol) VALUES (?, ?, ?, ?)", ['admin', hash('1234'), 'Administrador', 'admin']);
+            dbInstance.run("INSERT INTO usuarios (usuario, pin_acceso, nombre, rol) VALUES (?, ?, ?, ?)", ['gerente', hash('1111'), 'Gerente', 'gerente']);
+            dbInstance.run("INSERT INTO usuarios (usuario, pin_acceso, nombre, rol) VALUES (?, ?, ?, ?)", ['caja1', hash('2222'), 'Caja Principal', 'cajero']);
+            dbInstance.run("INSERT INTO usuarios (usuario, pin_acceso, nombre, rol) VALUES (?, ?, ?, ?)", ['mesonero1', hash('3333'), 'Mesonero 1', 'mesonero']);
+            dbInstance.run("INSERT INTO usuarios (usuario, pin_acceso, nombre, rol, estado_activo) VALUES (?, ?, ?, ?, ?)", ['demo', hash('0000'), 'Usuario Demo', 'admin', 1]);
             
             for (let i = 1; i <= 10; i++) {
                 dbInstance.run(`INSERT INTO mesas (numero_mesa) VALUES (${i})`);

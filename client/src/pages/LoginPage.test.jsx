@@ -131,8 +131,10 @@ describe('LoginPage', () => {
     expect(localStorage.getItem('modo_demo')).toBe('true');
   });
 
-  it('renderiza credenciales de prueba', () => {
+  it('renderiza credenciales de prueba al hacer clic en mostrar', () => {
     renderPage();
+    const toggle = screen.getByText(/Mostrar credenciales/);
+    fireEvent.click(toggle);
     expect(screen.getByText(/dueno \/ 0000/)).toBeInTheDocument();
     expect(screen.getByText(/admin \/ 1234/)).toBeInTheDocument();
   });

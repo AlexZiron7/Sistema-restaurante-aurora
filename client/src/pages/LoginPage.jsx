@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { LogIn, Delete, User } from 'lucide-react';
+import { LogIn, Delete, User, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 
@@ -8,6 +8,7 @@ export default function LoginPage() {
   const [pin, setPin] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showCredentials, setShowCredentials] = useState(false);
   const { login } = useAuth();
   const { error: showError } = useToast();
 
@@ -164,11 +165,19 @@ export default function LoginPage() {
           </div>
 
           <div className="mt-4 pt-4 border-t border-gray-200">
-            <p className="text-center text-gray-500 text-xs">
-              Credenciales de prueba:<br />
-              <span className="font-mono">dueno / 0000</span> | <span className="font-mono">admin / 1234</span><br />
-              <span className="font-mono">gerente / 1111</span> | <span className="font-mono">caja1 / 2222</span>
-            </p>
+            <button
+              onClick={() => setShowCredentials(!showCredentials)}
+              className="w-full flex items-center justify-center gap-2 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              {showCredentials ? <EyeOff size={14} /> : <Eye size={14} />}
+              {showCredentials ? 'Ocultar' : 'Mostrar'} credenciales de prueba
+            </button>
+            {showCredentials && (
+              <p className="text-center text-gray-500 text-xs mt-2">
+                <span className="font-mono">dueno / 0000</span> | <span className="font-mono">admin / 1234</span><br />
+                <span className="font-mono">gerente / 1111</span> | <span className="font-mono">caja1 / 2222</span>
+              </p>
+            )}
           </div>
         </div>
       </div>

@@ -75,7 +75,7 @@ function AppRoutes() {
 
   React.useEffect(() => {
     // Verificar licencia al cargar
-    fetch('http://localhost:4001/api/license-status')
+      fetch('/api/license-status')
       .then(res => res.json())
       .then(data => setLicense(data))
       .catch(err => console.error('Error al verificar licencia:', err));

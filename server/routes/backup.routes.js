@@ -2,12 +2,24 @@ const path = require('path');
 const fs = require('fs');
 
 module.exports = function (app, io, deps) {
-  const BACKUPS_DIR = path.resolve(__dirname, '..', '..', 'backups');
-  const DB_PATH = path.resolve(__dirname, '..', '..', 'restaurante.db');
+  const { appRoot } = deps;
+
+  function getBackupsDir() {
+    return path.resolve(appRoot, 'backups');
+  }
+
+  function getDbPath() {
+    return path.resolve(appRoot, 'restaurante.db');
+  }
+
+  function isSafeFilename(name) {
+    return /^[\w\-.]+$/.test(name) && !name.includes('..');
+  }
 
   function ensureDir() {
-    if (!fs.existsSync(BACKUPS_DIR)) {
-      fs.mkdirSync(BACKUPS_DIR, { recursive: true });
+    const dir = getBackupsDir();
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
     }
   }
 
@@ -19,8 +31,8 @@ module.exports = function (app, io, deps) {
     try {
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const nombre = `restaurante-${timestamp}.db`;
-      fs.copyFileSync(DB_PATH, path.join(BACKUPS_DIR, nombre));
-      const stats = fs.statSync(path.join(BACKUPS_DIR, nombre));
+      fs.copyFileSync(getDbPath(), path.join(getBackupsDir(), nombre));
+      const stats = fs.statSync(path.join(getBackupsDir(), nombre));
       res.json({ success: true, backup: { nombre, tamaño: stats.size, fecha: new Date().toISOString() } });
     } catch (err) {
       res.status(500).json({ success: false, message: err.message });
@@ -30,10 +42,10 @@ module.exports = function (app, io, deps) {
   app.get('/api/backups', (req, res) => {
     ensureDir();
     try {
-      const files = fs.readdirSync(BACKUPS_DIR)
+      const files = fs.readdirSync(getBackupsDir())
         .filter(f => f.endsWith('.db'))
         .map(f => {
-          const s = fs.statSync(path.join(BACKUPS_DIR, f));
+          const s = fs.statSync(path.join(getBackupsDir(), f));
           return { nombre: f, tamaño: s.size, fecha: s.mtime.toISOString() };
         })
         .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
@@ -44,12 +56,16 @@ module.exports = function (app, io, deps) {
   });
 
   app.post('/api/backups/restore/:filename', (req, res) => {
-    const backupPath = path.join(BACKUPS_DIR, req.params.filename);
+    const filename = req.params.filename;
+    if (!isSafeFilename(filename)) {
+      return res.status(400).json({ success: false, message: 'Nombre de archivo inválido' });
+    }
+    const backupPath = path.join(getBackupsDir(), filename);
     if (!fs.existsSync(backupPath)) {
       return res.status(404).json({ success: false, message: 'Backup no encontrado' });
     }
     try {
-      fs.copyFileSync(backupPath, DB_PATH);
+      fs.copyFileSync(backupPath, getDbPath());
       res.json({ success: true, message: 'Backup restaurado. Reinicia el servidor para aplicar los cambios.' });
     } catch (err) {
       res.status(500).json({ success: false, message: err.message });
@@ -57,7 +73,11 @@ module.exports = function (app, io, deps) {
   });
 
   app.delete('/api/backups/:filename', (req, res) => {
-    const backupPath = path.join(BACKUPS_DIR, req.params.filename);
+    const filename = req.params.filename;
+    if (!isSafeFilename(filename)) {
+      return res.status(400).json({ success: false, message: 'Nombre de archivo inválido' });
+    }
+    const backupPath = path.join(getBackupsDir(), filename);
     if (!fs.existsSync(backupPath)) {
       return res.status(404).json({ success: false, message: 'Backup no encontrado' });
     }

@@ -39,10 +39,7 @@ server.listen(PORT, async () => {
     }
 });
 
-// Rutas de actualización (puedes moverlas a un archivo de rutas si prefieres)
-const express = require('express'); // app ya es una instancia de express en server/app.js
-const app = server; // Nota: server suele ser el servidor http, app es la instancia de express. 
-// Reviso server/app.js para estar seguro...
+
 
 function gracefulShutdown() {
     console.log('\n🛑 Apagando servidor...');

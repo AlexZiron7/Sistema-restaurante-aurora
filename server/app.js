@@ -10,6 +10,7 @@ const { getDb, setModoDemo } = require('../database');
 const bcrypt = require('bcryptjs');
 const { obtenerTasaBCV } = require('../services/tasaBcv');
 const { errorHandler } = require('./middleware/errorHandler');
+const { getLockStatus } = require('./licenseManager');
 
 const appRoot = process.pkg ? path.dirname(process.execPath) : path.resolve(__dirname, '..');
 
@@ -74,7 +75,7 @@ app.get('/api/license-status', (req, res) => {
 });
 // ------------------------------------------
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 io.on('connection', (socket) => {
     console.log('📱 Dispositivo conectado:', socket.id);
@@ -94,7 +95,7 @@ async function initTasaBCV() {
 
 if (!process.env.VITEST_DB) initTasaBCV();
 
-const deps = { getDb, setModoDemo, upload, bcrypt, obtenerTasaBCV, path, fs };
+const deps = { getDb, setModoDemo, upload, bcrypt, obtenerTasaBCV, path, fs, appRoot };
 
 require('./routes/auth.routes')(app, io, deps);
 require('./routes/mesas.routes')(app, io, deps);

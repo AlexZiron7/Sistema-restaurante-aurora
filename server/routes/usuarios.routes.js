@@ -28,6 +28,14 @@ module.exports = function (app, io, deps) {
       return res.status(400).json({ success: false, message: 'Todos los campos son requeridos' });
     }
 
+    if (pin.length < 4) {
+      return res.status(400).json({ success: false, message: 'El PIN debe tener al menos 4 dígitos' });
+    }
+
+    if (pin.length > 10) {
+      return res.status(400).json({ success: false, message: 'El PIN no puede tener más de 10 dígitos' });
+    }
+
     const rolesValidos = ['admin', 'gerente', 'cajero', 'mesonero', 'cocina'];
     if (!rolesValidos.includes(rol)) {
       return res.status(400).json({ success: false, message: 'Rol no válido' });
@@ -65,6 +73,15 @@ module.exports = function (app, io, deps) {
 
     if (updates.length === 0 && !pin) {
       return res.status(400).json({ success: false, message: 'No hay campos para actualizar' });
+    }
+
+    if (pin && pin !== '****') {
+      if (pin.length < 4) {
+        return res.status(400).json({ success: false, message: 'El PIN debe tener al menos 4 dígitos' });
+      }
+      if (pin.length > 10) {
+        return res.status(400).json({ success: false, message: 'El PIN no puede tener más de 10 dígitos' });
+      }
     }
 
     function doUpdate() {
