@@ -433,18 +433,13 @@ export default function CajaPage() {
       tarjeta: { referencia: datosPago.referencia }
     };
 
-    const res = await fetch(`/api/mesas/${selectedMesa.id}/cobrar`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ metodo_pago: metodoPago, datos_pago: datosPagoFinal[metodoPago] })
-    });
-
-    if (res.ok) {
+    try {
+      await api.cobrarMesa(selectedMesa.id, metodoPago, datosPagoFinal[metodoPago]);
       const metodoLabel = METODOS_PAGO.find(m => m.id === metodoPago)?.label || metodoPago;
       success(`💰 Mesa ${selectedMesa.numero_mesa} cobrada por ${metodoLabel}`);
       handleCerrarDetalle();
       fetchMesas();
-    } else {
+    } catch (e) {
       error('Error al procesar el cobro');
     }
     setCobrando(false);

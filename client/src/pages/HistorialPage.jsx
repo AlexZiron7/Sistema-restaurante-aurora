@@ -196,14 +196,7 @@ export default function HistorialPage() {
     if (resetPage) setPage(0);
 
     try {
-      const params = new URLSearchParams({
-        desde, hasta,
-        metodo,
-        limit: POR_PAGINA,
-        offset: currentPage * POR_PAGINA
-      });
-      const res = await fetch(`/api/pedidos/historial?${params}`);
-      const data = await res.json();
+      const data = await api.getHistorial({ desde, hasta, metodo, limit: POR_PAGINA, offset: currentPage * POR_PAGINA });
       setPedidos(data.pedidos || []);
       setTotalRegistros(data.total || 0);
     } catch (e) {
@@ -221,8 +214,7 @@ export default function HistorialPage() {
       return;
     }
     try {
-      const res = await fetch(`/api/pedidos/${id}/detalle`);
-      const data = await res.json();
+      const data = await api.getPedidoDetalle(id);
       setDetalle(prev => ({ ...prev, [id]: data }));
       setExpandido(id);
     } catch (e) {

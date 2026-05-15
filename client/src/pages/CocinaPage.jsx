@@ -138,14 +138,14 @@ export default function CocinaPage() {
   useEffect(() => {
     if (!socket) return;
 
-    socket.on('nuevo_pedido', ({ id_mesa }) => {
-      info(`Nuevo pedido para mesa ${id_mesa}`);
+    socket.on('nuevo_pedido', ({ numero_mesa }) => {
+      info(`Nuevo pedido para mesa ${numero_mesa}`);
       if (sonidoActivo) playNotificationSound();
       cargarPedidos();
     });
 
-    socket.on('pedido_actualizado', ({ id_mesa }) => {
-      if (id_mesa) info(`Nuevos platos en mesa ${id_mesa}`);
+    socket.on('pedido_actualizado', ({ numero_mesa }) => {
+      if (numero_mesa) info(`Nuevos platos en mesa ${numero_mesa}`);
       if (sonidoActivo) playNotificationSound();
       cargarPedidos();
     });

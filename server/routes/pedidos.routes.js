@@ -19,8 +19,11 @@ module.exports = function (app, io, deps) {
 
         db.run("UPDATE mesas SET estado = 'ocupada' WHERE id = ?", [id_mesa]);
 
-        io.emit('nuevo_pedido', { id_pedido, id_mesa });
-        io.emit('mesa_actualizada', { id: id_mesa, estado: 'ocupada' });
+        db.get("SELECT numero_mesa FROM mesas WHERE id = ?", [id_mesa], (_, row) => {
+          const n = row?.numero_mesa ?? id_mesa;
+          io.emit('nuevo_pedido', { id_pedido, id_mesa, numero_mesa: n });
+          io.emit('mesa_actualizada', { id: id_mesa, estado: 'ocupada' });
+        });
 
         res.json({ success: true, id_pedido });
       });
@@ -43,11 +46,22 @@ module.exports = function (app, io, deps) {
         const id_mesa = row ? row.id_mesa : null;
         if (id_mesa) {
           db.run("UPDATE mesas SET estado = 'ocupada' WHERE id = ?", [id_mesa]);
-          io.emit('mesa_actualizada', { id: id_mesa, estado: 'ocupada' });
         }
-        io.emit('pedido_actualizado', { id_pedido: parseInt(id), id_mesa });
-        if (id_mesa) io.emit('nuevo_pedido', { id_pedido: parseInt(id), id_mesa });
-        res.json({ success: true });
+        const afterEmit = (numMesa) => {
+          io.emit('pedido_actualizado', { id_pedido: parseInt(id), id_mesa, numero_mesa: numMesa });
+          if (id_mesa) {
+            io.emit('mesa_actualizada', { id: id_mesa, estado: 'ocupada' });
+            io.emit('nuevo_pedido', { id_pedido: parseInt(id), id_mesa, numero_mesa: numMesa });
+          }
+          res.json({ success: true });
+        };
+        if (id_mesa) {
+          db.get("SELECT numero_mesa FROM mesas WHERE id = ?", [id_mesa], (_, row2) => {
+            afterEmit(row2?.numero_mesa);
+          });
+        } else {
+          afterEmit(0);
+        }
       });
     });
   });
