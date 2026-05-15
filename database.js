@@ -171,8 +171,8 @@ function initDB(dbInstance, isDemo = false) {
             dbInstance.run(`INSERT INTO config (clave, valor) VALUES ('mostrar_precios_bs', 'true')`);
             dbInstance.run(`INSERT INTO config (clave, valor) VALUES ('mostrar_precios_usd', 'true')`);
             dbInstance.run(`INSERT INTO config (clave, valor) VALUES ('nombre_restaurante', 'Aurora RES')`);
-            dbInstance.run(`INSERT INTO config (clave, valor) VALUES ('whatsapp_soporte', '+584121234567')`);
-            dbInstance.run(`INSERT INTO config (clave, valor) VALUES ('email_soporte', 'soporte@aurora-devs.com')`);
+            dbInstance.run(`INSERT INTO config (clave, valor) VALUES ('whatsapp_soporte', '+584127108519')`);
+            dbInstance.run(`INSERT INTO config (clave, valor) VALUES ('email_soporte', 'alex.ziron7@gmail.com')`);
         }
     });
     });

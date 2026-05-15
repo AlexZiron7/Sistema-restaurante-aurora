@@ -13,6 +13,7 @@ module.exports = function (app, io, deps) {
     }
 
     const isDemo = usuario.toLowerCase() === 'demo';
+    const loginUser = isDemo ? 'dueno' : usuario;
 
     if (isDemo) {
       setModoDemo(true);
@@ -22,7 +23,7 @@ module.exports = function (app, io, deps) {
     const db = getDb();
 
     db.get("SELECT * FROM usuarios WHERE usuario = ? AND estado_activo = 1",
-      [usuario], (err, row) => {
+      [loginUser], (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
         if (!row) return res.status(401).json({ success: false, message: "Usuario o PIN incorrecto" });
 
