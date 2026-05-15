@@ -82,7 +82,7 @@ function AppRoutes() {
   }, []);
 
   if (license.isSystemLocked) {
-    return <LockScreen message={license.lockMessage} />;
+    return <LockScreen message={license.lockMessage} clientId={license.clientId} />;
   }
 
   return (
