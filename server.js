@@ -3,11 +3,14 @@ require('dotenv').config();
 const { server } = require('./server/app');
 const { setupGlobalErrorHandlers } = require('./server/middleware/errorHandler');
 const { checkForUpdates, downloadAndInstall } = require('./server/updater');
+const { runMigrations } = require('./server/db/migrationManager');
+const { checkLicenseStatus } = require('./server/licenseManager');
+const db = require('./database');
 
 setupGlobalErrorHandlers();
 
 const PORT = process.env.PORT || 4001;
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
     console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
     if (process.pkg) {
         const url = `http://localhost:${PORT}`;
@@ -18,12 +21,21 @@ server.listen(PORT, () => {
             });
         }, 2000);
 
-        // Opcional: Buscar actualizaciones al arrancar
+        // 1. Ejecutar migraciones primero
+        await runMigrations(db);
+
+        // 2. Verificar Licencia (Kill Switch)
+        await checkLicenseStatus();
+
+        // 3. Buscar actualizaciones
         checkForUpdates().then(update => {
             if (update.available) {
                 console.log(`📢 [UPDATE] Hay una nueva versión disponible (${update.version})`);
             }
         });
+
+        // Re-verificar licencia cada 24 horas
+        setInterval(checkLicenseStatus, 24 * 60 * 60 * 1000);
     }
 });
 

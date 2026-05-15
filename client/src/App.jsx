@@ -4,6 +4,7 @@ import { RestaurantProvider } from './contexts/RestaurantContext';
 import { ToastProvider } from './contexts/ToastContext';
 import Navbar from './components/Navbar';
 import ErrorBoundary from './components/ErrorBoundary';
+import LockScreen from './components/LockScreen';
 import LoginPage from './pages/LoginPage';
 import MesasPage from './pages/MesasPage';
 import CocinaPage from './pages/CocinaPage';
@@ -70,6 +71,19 @@ function AdminRoute({ children }) {
 
 function AppRoutes() {
   const { user } = useAuth();
+  const [license, setLicense] = React.useState({ isSystemLocked: false, lockMessage: '' });
+
+  React.useEffect(() => {
+    // Verificar licencia al cargar
+    fetch('http://localhost:4001/api/license-status')
+      .then(res => res.json())
+      .then(data => setLicense(data))
+      .catch(err => console.error('Error al verificar licencia:', err));
+  }, []);
+
+  if (license.isSystemLocked) {
+    return <LockScreen message={license.lockMessage} />;
+  }
 
   return (
     <div className="h-[100dvh] flex bg-gray-100">

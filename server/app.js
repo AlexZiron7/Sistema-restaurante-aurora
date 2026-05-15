@@ -52,6 +52,28 @@ const io = new Server(server, {
 
 app.use(cors());
 app.use(express.static(path.join(__dirname, '..', 'public')));
+
+// --- SISTEMA DE LICENCIA (KILL SWITCH) ---
+app.use((req, res, next) => {
+    const { isSystemLocked, lockMessage } = getLockStatus();
+    
+    // Si el sistema está bloqueado, solo permitimos peticiones de estado, 
+    // todo lo demás (pedidos, auth, etc.) se bloquea.
+    if (isSystemLocked && !req.path.startsWith('/api/license-status')) {
+        return res.status(403).json({
+            locked: true,
+            message: lockMessage
+        });
+    }
+    next();
+});
+
+// Ruta para que el frontend sepa si debe mostrar la pantalla de bloqueo
+app.get('/api/license-status', (req, res) => {
+    res.json(getLockStatus());
+});
+// ------------------------------------------
+
 app.use(express.json());
 
 io.on('connection', (socket) => {
