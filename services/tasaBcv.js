@@ -19,7 +19,7 @@ async function obtenerTasaBCV() {
                         const tasaStr = match[1] || match[0];
                         const cleaned = tasaStr.replace(/[^\d.,]/g, '').replace(',', '.');
                         const tasa = parseFloat(cleaned);
-                        if (!isNaN(tasa) && tasa > 1000000) {
+                        if (!isNaN(tasa) && tasa > 10 && tasa < 200) {
                             return tasa;
                         }
                     }
@@ -33,38 +33,15 @@ async function obtenerTasaBCV() {
             parse: (text) => {
                 const patterns = [
                     /Bs\.?\s*([\d.,]+)/,
-                    /([\d.]{3,10},\d{2})/,
-                    /Tasa\s*(?:USD)?:?\s*([\d.,]+)/,
-                    /\$?\s*([\d]{1,3}(?:[\.,]\d{3})*,\d{2})/
+                    /Tasa\s*(?:BCV)?:?\s*([\d.,]+)/i,
+                    /Promedio[:\s]*([\d.,]+)/i
                 ];
                 for (const pattern of patterns) {
                     const match = text.match(pattern);
                     if (match) {
                         let tasaStr = match[1].replace(/\./g, '').replace(',', '.');
                         const tasa = parseFloat(tasaStr);
-                        if (!isNaN(tasa) && tasa > 1000000 && tasa < 100000000) {
-                            return tasa;
-                        }
-                    }
-                }
-                return null;
-            }
-        },
-        {
-            nombre: 'enParaleloVzla',
-            url: 'https://enparalelovzla.com/',
-            parse: (text) => {
-                const patterns = [
-                    /bcv["\s:]+([\d.,]+)/i,
-                    /([\d.]{3,10},\d{2})/,
-                    /Dolar\s*(?:BCV|Oficial)[:\s]*([\d.,]+)/i
-                ];
-                for (const pattern of patterns) {
-                    const match = text.match(pattern);
-                    if (match) {
-                        let tasaStr = match[1].replace(/\./g, '').replace(',', '.');
-                        const tasa = parseFloat(tasaStr);
-                        if (!isNaN(tasa) && tasa > 1000000) {
+                        if (!isNaN(tasa) && tasa > 10 && tasa < 200) {
                             return tasa;
                         }
                     }
@@ -86,16 +63,15 @@ async function obtenerTasaBCV() {
             }
         },
         {
-            nombre: 'dolar-api',
-            url: 'https://pydolarvenezuela-api.vercel.app/api/v1/dollar?page=bcv',
+            nombre: 'pydolar',
+            url: 'https://pydolarvenezuela-api.vercel.app/api/v1/dollar/page?page=bcv',
             parse: (text) => {
                 try {
                     const data = JSON.parse(text);
-                    if (data.monitors && data.monitors.usd) {
-                        return parseFloat(data.monitors.usd.price);
-                    }
-                    if (data.price) {
-                        return parseFloat(data.price);
+                    // Buscar en el array de monitores el que diga BCV
+                    if (data.monitors) {
+                        const bcv = Object.values(data.monitors).find(m => m.name && m.name.includes('BCV'));
+                        if (bcv) return parseFloat(bcv.price);
                     }
                 } catch {}
                 return null;

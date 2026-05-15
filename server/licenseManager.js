@@ -74,6 +74,7 @@ async function checkLicenseStatus(caller = 'desconocido') {
 
         // --- EXITO: Guardar fecha de última verificación ---
         isSystemLocked = false;
+        lockMessage = 'Sistema activado correctamente.';
         try {
             fs.writeFileSync(LICENSE_CACHE_FILE, JSON.stringify({
                 lastCheck: new Date().getTime(),

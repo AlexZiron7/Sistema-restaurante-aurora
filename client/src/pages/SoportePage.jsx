@@ -13,10 +13,10 @@ export default function SoportePage() {
   }, []);
 
   const whatsappUrl = `https://wa.me/${config.whatsapp_soporte.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
-    mensaje || '¡Hola! Necesito ayuda con el Sistema de Restaurante.'
+    mensaje || '¡Hola! Necesito ayuda con el Aurora RES.'
   )}`;
 
-  const emailUrl = `mailto:${config.email_soporte}?subject=${encodeURIComponent('Soporte - Sistema Restaurante')}&body=${encodeURIComponent(
+  const emailUrl = `mailto:${config.email_soporte}?subject=${encodeURIComponent('Soporte - Aurora RES')}&body=${encodeURIComponent(
     mensaje || 'Hola, necesito ayuda con el sistema.'
   )}`;
 
@@ -131,7 +131,7 @@ export default function SoportePage() {
 
         {/* Footer */}
         <div className="text-center mt-5 text-xs text-gray-400">
-          <p>Sistema de Restaurante · Desarrollado por <span className="font-semibold text-gray-500">Aurora Devs</span></p>
+          <p>Aurora RES · Desarrollado por <span className="font-semibold text-gray-500">Aurora Devs</span></p>
           <p className="mt-0.5">v2.0 · 2025</p>
         </div>
       </div>

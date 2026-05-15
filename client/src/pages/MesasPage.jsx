@@ -132,7 +132,7 @@ export default function MesasPage() {
     <div className="h-full flex flex-col animate-fade-in">
       <div className="bg-white border-b px-4 py-3">
         <div className="flex items-center justify-between mb-3">
-          <h1 className="text-xl font-bold text-gray-800">Mesas del Restaurante</h1>
+          <h1 className="text-xl font-bold text-gray-800">Panel de Mesas</h1>
           <div className="flex items-center gap-2">
             {puedeVerConfig(user?.rol) && (
               <button

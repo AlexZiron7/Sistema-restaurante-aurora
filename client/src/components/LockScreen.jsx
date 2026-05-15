@@ -43,7 +43,7 @@ const LockScreen = ({ message, clientId }) => {
         <div className="mb-10 flex justify-center relative">
           <div className="w-28 h-28 bg-white/5 rounded-3xl flex items-center justify-center p-4 border border-white/10 shadow-inner">
             <img 
-              src="/logo-aurora.png" 
+              src="/logo-aplicacion.png" 
               alt="Aurora Logo" 
               className="w-full h-full object-contain filter drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]"
             />

@@ -8,7 +8,6 @@ export default function LoginPage() {
   const [pin, setPin] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showCredentials, setShowCredentials] = useState(false);
   const { login } = useAuth();
   const { error: showError } = useToast();
 
@@ -68,10 +67,10 @@ export default function LoginPage() {
     <div className="min-h-[100dvh] w-full bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-fade-in">
       <div className="w-full max-w-sm my-auto py-8">
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-white rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-xl">
-            <span className="text-primary-600 text-4xl font-bold">R</span>
+          <div className="w-20 h-20 bg-white rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-xl p-3">
+            <img src="/logo-aplicacion.png" alt="Aurora RES Logo" className="w-full h-full object-contain" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Sistema Restaurante</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">Aurora RES</h1>
           <p className="text-primary-200">Ingresa tus credenciales</p>
         </div>
 
@@ -164,21 +163,6 @@ export default function LoginPage() {
             </button>
           </div>
 
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <button
-              onClick={() => setShowCredentials(!showCredentials)}
-              className="w-full flex items-center justify-center gap-2 text-xs text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              {showCredentials ? <EyeOff size={14} /> : <Eye size={14} />}
-              {showCredentials ? 'Ocultar' : 'Mostrar'} credenciales de prueba
-            </button>
-            {showCredentials && (
-              <p className="text-center text-gray-500 text-xs mt-2">
-                <span className="font-mono">dueno / 0000</span> | <span className="font-mono">admin / 1234</span><br />
-                <span className="font-mono">gerente / 1111</span> | <span className="font-mono">caja1 / 2222</span>
-              </p>
-            )}
-          </div>
         </div>
       </div>
     </div>

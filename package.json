@@ -1,5 +1,5 @@
 {
-  "name": "Sistema-Restaurante",
+  "name": "aurora-res",
   "version": "1.0.0",
   "description": "Sistema POS para restaurante",
   "main": "server.js",

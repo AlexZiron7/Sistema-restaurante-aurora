@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BookOpen, ChevronDown, ChevronRight, UtensilsCrossed, Receipt, ChefHat, LayoutGrid, DollarSign, History, Settings, Users } from 'lucide-react';
+import { BookOpen, ChevronDown, ChevronRight, UtensilsCrossed, Receipt, ChefHat, LayoutGrid, DollarSign, History, Settings } from 'lucide-react';
 
 const SECCIONES = [
   {
@@ -7,7 +7,7 @@ const SECCIONES = [
     icon: LayoutGrid,
     color: 'bg-indigo-100 text-indigo-600',
     titulo: '¿Cómo funciona el sistema?',
-    contenido: `El Sistema de Restaurante es una herramienta digital para gestionar las mesas, pedidos, cocina y caja de tu negocio en tiempo real.
+    contenido: `Aurora RES es una herramienta digital para gestionar las mesas, pedidos, cocina y caja de tu negocio en tiempo real.
 
 **¿Cómo instalar en tablets y teléfonos?**
 1. Conecta la tablet/teléfono al mismo WiFi que la computadora principal.
@@ -156,7 +156,6 @@ Este módulo es solo visible para roles de Gerente, Administrador y Dueño.`
 
 **Configuración:**
 • Tasa BCV (para mostrar precios en Bs)
-• Nombre del restaurante
 • Configurar WhatsApp y correo de soporte
 
 **Consejo:** Si cambias los precios de la carta, los pedidos ya abiertos mantienen el precio original — los cambios solo afectan pedidos nuevos.`
@@ -174,8 +173,8 @@ export default function ManualPage() {
             <BookOpen size={22} className="text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-gray-800">Manual de Usuario</h1>
-            <p className="text-xs text-gray-400">Guía rápida del sistema de restaurante</p>
+            <h1 className="text-xl font-bold text-gray-800">Manual de Usuario</h1>
+            <p className="text-xs text-gray-400">Guía rápida de Aurora RES</p>
           </div>
         </div>
       </div>
@@ -243,6 +242,9 @@ export default function ManualPage() {
           </a>
         </div>
       </div>
+      <footer className="py-6 text-center text-xs text-gray-400">
+        <p>Aurora RES · Desarrollado por <span className="font-semibold text-gray-500">Aurora Devs</span></p>
+      </footer>
     </div>
   );
 }

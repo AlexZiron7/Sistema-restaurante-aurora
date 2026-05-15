@@ -43,7 +43,7 @@ export default function TicketPrinter({ pedidoId, mesaNumero, className = '' }) 
         </head>
         <body>
           <div class="header">
-            <strong>RESTAURANTE</strong>
+            <strong>AURORA RES</strong>
           </div>
           <div class="divider"></div>
           <div class="row"><span>Mesa:</span><span>#${mesaNumero}</span></div>
@@ -83,7 +83,7 @@ export default function TicketPrinter({ pedidoId, mesaNumero, className = '' }) 
   const generarTextoTicket = (ticket) => {
     let texto = `
 ================================
-         RESTAURANTE
+         AURORA RES
 ================================
 Mesa: #${mesaNumero}
 Fecha: ${ticket.fecha}

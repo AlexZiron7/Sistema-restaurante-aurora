@@ -63,11 +63,11 @@ export default function Navbar() {
         {/* Logo */}
         <div className="p-4 border-b">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-xl flex items-center justify-center shadow-md shadow-indigo-200 flex-shrink-0">
-              <span className="text-white font-black text-lg">R</span>
+            <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-md overflow-hidden flex-shrink-0">
+              <img src="/logo-aplicacion.png" alt="Logo" className="w-full h-full object-contain" />
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="font-black text-gray-800 text-sm leading-tight truncate">Restaurante</h1>
+              <h1 className="font-black text-gray-800 text-sm leading-tight truncate">Aurora RES</h1>
               {isDemo && (
                 <span className="bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                   DEMO
@@ -154,8 +154,8 @@ export default function Navbar() {
       {/* ==================== MOBILE & TABLET HEADER (< 1024px) ==================== */}
       <div className="flex lg:hidden bg-white border-b shadow-sm px-3 py-2 items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-lg flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-black text-sm">R</span>
+          <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm">
+            <img src="/logo-aplicacion.png" alt="Logo" className="w-full h-full object-contain" />
           </div>
           <div className="flex flex-col">
             <span className="font-bold text-gray-800 text-sm leading-tight">{user?.nombre}</span>

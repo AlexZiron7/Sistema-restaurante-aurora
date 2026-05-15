@@ -7,11 +7,11 @@
 ;       o desde npm:  npm run dist
 ; ===========================================================================
 
-#define MyAppName      "Sistema Restaurante"
+#define MyAppName      "Aurora RES"
 #define MyAppVersion   "1.0.0"
 #define MyAppPublisher "Aurora Devs"
 #define MyAppURL       "https://auroradevs.com"
-#define MyAppExeName   "Sistema-Restaurante.exe"
+#define MyAppExeName   "AuroraRES.exe"
 #define MyAppPort      "4001"
 
 ; ===========================================================================
@@ -48,7 +48,7 @@ AllowNoIcons=yes
 ; --- Apariencia del wizard ---
 WizardStyle=modern
 WizardSizePercent=110
-; SetupIconFile=assets\icon.ico       ; <-- Descomenta si tienes un .ico
+SetupIconFile=client\public\logo-aplicacion.ico
 ; WizardImageFile=assets\wizard.bmp   ; <-- Descomenta si tienes banner 164x314
 ; WizardSmallImageFile=assets\logo.bmp; <-- Descomenta si tienes logo 55x58
 
@@ -105,6 +105,12 @@ Name: "{app}\public\uploads"; Permissions: users-modify
 Name: "{app}\public\demo";    Permissions: users-modify
 
 ; ===========================================================================
+; [InstallDelete] - Limpiar basura antes de instalar nueva version
+; ===========================================================================
+[InstallDelete]
+Type: files; Name: "{app}\.license_cache"
+
+; ===========================================================================
 ; [Icons] - Accesos directos
 ; ===========================================================================
 [Icons]
@@ -142,6 +148,7 @@ Filename: "netsh"; Parameters: "advfirewall firewall delete rule name=""{#MyAppN
 ; ===========================================================================
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\public"
+Type: files; Name: "{app}\.license_cache"
 
 ; ===========================================================================
 ; [Registry] - Entradas de registro

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Plus, Edit2, Trash2, Save, X, RefreshCw, DollarSign, Image as ImageIcon, Package, Folder, List, Check } from 'lucide-react';
+import { Plus, Edit2, Trash2, Save, X, RefreshCw, DollarSign, Image as ImageIcon, Package, Folder, List, Check, FileSpreadsheet } from 'lucide-react';
 import { api } from '../services/api';
 import { useRestaurant } from '../contexts/RestaurantContext';
 import { useToast } from '../contexts/ToastContext';
@@ -55,6 +55,47 @@ export default function MenuPage() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const handleImportarCSV = async (file) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const text = e.target.result;
+      const lines = text.split(/\r?\n/).filter(l => l.trim());
+      if (lines.length < 2) return error('El archivo no tiene datos suficientes');
+
+      // Detectar delimitador
+      const firstLine = lines[0];
+      const delimiter = firstLine.includes(';') ? ';' : ',';
+      
+      const headers = firstLine.split(delimiter).map(h => h.trim().toLowerCase());
+      const data = lines.slice(1).map(line => {
+        const values = line.split(delimiter);
+        const obj = {};
+        headers.forEach((header, i) => {
+          obj[header] = values[i]?.trim();
+        });
+        return {
+          nombre: obj.nombre || obj.product || obj.articulo,
+          descripcion: obj.descripcion || obj.detalles || '',
+          precio_usd: parseFloat(obj.precio_usd || obj.precio || 0),
+          categoria: obj.categoria || obj.tipo || 'General'
+        };
+      }).filter(p => p.nombre);
+
+      if (data.length === 0) return error('El archivo está vacío');
+
+      try {
+        setLoading(true);
+        await api.importarProductos(data);
+        success(`${data.length} productos importados correctamente`);
+        fetchData();
+      } catch (err) {
+        error('Error al importar productos: ' + err.message);
+        setLoading(false);
+      }
+    };
+    reader.readAsText(file);
+  };
 
   // --- CATEGORÍAS ---
   const abrirModalCategoria = (categoria = null) => {
@@ -280,7 +321,31 @@ export default function MenuPage() {
 
       {tabActual === 'productos' && (
         <div className="space-y-6">
-          <div className="flex justify-end">
+          <div className="flex flex-wrap gap-2 justify-end">
+            <a
+              href="/api/productos/plantilla"
+              download
+              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 font-semibold transition-all shadow-sm"
+            >
+              <FileSpreadsheet size={18} className="text-green-600" />
+              Plantilla CSV
+            </a>
+            <button
+              onClick={() => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.csv';
+                input.onchange = (e) => {
+                  const file = e.target.files[0];
+                  if (file) handleImportarCSV(file);
+                };
+                input.click();
+              }}
+              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 font-semibold transition-all shadow-sm"
+            >
+              <RefreshCw size={18} className="text-indigo-600" />
+              Carga Masiva
+            </button>
             <button
               onClick={() => abrirModalProducto()}
               className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white rounded-xl shadow-lg shadow-primary-500/30 font-semibold transition-all transform hover:scale-105 active:scale-95"

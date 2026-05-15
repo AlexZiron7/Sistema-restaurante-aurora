@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { RestaurantProvider } from './contexts/RestaurantContext';
 import { ToastProvider } from './contexts/ToastContext';
 import Navbar from './components/Navbar';
+import UpdateBanner from './components/UpdateBanner';
 import ErrorBoundary from './components/ErrorBoundary';
 import LockScreen from './components/LockScreen';
 import LoginPage from './pages/LoginPage';
@@ -119,6 +120,7 @@ function AppRoutes() {
                     </Routes>
                   </div>
                 </main>
+                <UpdateBanner />
               </div>
             </ProtectedRoute>
           }

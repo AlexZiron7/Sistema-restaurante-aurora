@@ -17,6 +17,13 @@ module.exports = function (app, io, deps) {
     });
   });
 
+  app.get('/api/productos/plantilla', (req, res) => {
+    const csvContent = "nombre,descripcion,precio_usd,categoria\nCafé americano,Café negro intenso,2.5,Bebidas\nPizza Margarita,Salsa tomate y mozzarella,12.0,Principales\n";
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=plantilla_menu.csv');
+    res.status(200).send(csvContent);
+  });
+
   app.delete('/api/productos/:id/imagen', (req, res) => {
     const db = getDb();
     const { id } = req.params;
@@ -126,5 +133,38 @@ module.exports = function (app, io, deps) {
         res.json({ success: true });
       });
     });
+  });
+  app.post('/api/productos/importar', async (req, res) => {
+    const db = getDb();
+    const { productos } = req.body;
+
+    if (!Array.isArray(productos)) {
+      return res.status(400).json({ success: false, message: 'Se esperaba un array de productos' });
+    }
+
+    try {
+      // Usar una transacción para mayor velocidad y seguridad
+      db.serialize(() => {
+        db.run("BEGIN TRANSACTION");
+
+        const stmtCat = db.prepare("INSERT OR IGNORE INTO categorias (nombre, icono) VALUES (?, '🍽️')");
+        const stmtProd = db.prepare("INSERT INTO productos (nombre, descripcion, precio_usd, id_categoria) VALUES (?, ?, ?, (SELECT id FROM categorias WHERE nombre = ? LIMIT 1))");
+
+        productos.forEach(p => {
+          if (p.categoria) stmtCat.run(p.categoria);
+          stmtProd.run(p.nombre, p.descripcion || '', p.precio_usd || 0, p.categoria || null);
+        });
+
+        stmtCat.finalize();
+        stmtProd.finalize();
+
+        db.run("COMMIT", (err) => {
+          if (err) return res.status(500).json({ success: false, error: err.message });
+          res.json({ success: true, count: productos.length });
+        });
+      });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
   });
 };

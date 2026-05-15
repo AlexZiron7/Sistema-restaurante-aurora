@@ -153,6 +153,12 @@ export const api = {
     return request(`/productos/${id}`, { method: 'DELETE' });
   },
 
+  async importarProductos(productos) {
+    return request('/productos/importar', {
+      method: 'POST', body: JSON.stringify({ productos })
+    });
+  },
+
   async getStatsHoy() { return request('/stats/hoy'); },
   async getStatsSemana() { return request('/stats/semana'); },
   async getStatsMesoneros() { return request('/stats/mesoneros'); },
@@ -218,6 +224,13 @@ export const api = {
   async crearBackup() { return request('/backups', { method: 'POST' }); },
   async restaurarBackup(filename) { return request(`/backups/restore/${filename}`, { method: 'POST' }); },
   async eliminarBackup(filename) { return request(`/backups/${filename}`, { method: 'DELETE' }); },
+
+  async getUpdatesCheck() { return request('/updates/check'); },
+  async instalarUpdate(url) {
+    return request('/updates/install', {
+      method: 'POST', body: JSON.stringify({ url })
+    });
+  },
 };
 
 export const ROLES = {
