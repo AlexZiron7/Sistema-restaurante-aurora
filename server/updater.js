@@ -43,30 +43,45 @@ function isNewer(remote, local) {
 // Esta función descarga el instalador y lo ejecuta
 async function downloadAndInstall(url) {
     const installerPath = path.join(process.env.TEMP, 'Restaurante-Update.exe');
-    console.log('Descargando actualización...');
+    console.log(`[Updater] Iniciando descarga desde: ${url}`);
     
-    const response = await axios({
-        method: 'GET',
-        url: url,
-        responseType: 'stream'
-    });
-
-    const writer = fs.createWriteStream(installerPath);
-    response.data.pipe(writer);
-
-    return new Promise((resolve, reject) => {
-        writer.on('finish', () => {
-            console.log('Descarga completa. Ejecutando instalador...');
-            // Ejecutar el instalador y cerrar la app actual
-            const child = spawn(installerPath, ['/SILENT'], {
-                detached: true,
-                stdio: 'ignore'
-            });
-            child.unref();
-            process.exit(0);
+    try {
+        const response = await axios({
+            method: 'GET',
+            url: url,
+            responseType: 'stream',
+            timeout: 30000 // 30 segundos de timeout para iniciar
         });
-        writer.on('error', reject);
-    });
+
+        const writer = fs.createWriteStream(installerPath);
+        
+        return new Promise((resolve, reject) => {
+            response.data.pipe(writer);
+            
+            let error = null;
+            writer.on('error', err => {
+                error = err;
+                writer.close();
+                reject(err);
+            });
+
+            writer.on('close', () => {
+                if (!error) {
+                    console.log('[Updater] Descarga completa. Ejecutando instalador...');
+                    const child = spawn(installerPath, ['/SILENT'], {
+                        detached: true,
+                        stdio: 'ignore'
+                    });
+                    child.unref();
+                    setTimeout(() => process.exit(0), 1000); // Dar tiempo para que el SO inicie el proceso
+                    resolve();
+                }
+            });
+        });
+    } catch (err) {
+        console.error('[Updater] Error crítico en descarga:', err.message);
+        throw err;
+    }
 }
 
 module.exports = { checkForUpdates, downloadAndInstall };
