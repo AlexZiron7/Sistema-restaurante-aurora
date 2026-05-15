@@ -16,9 +16,10 @@ function getHardwareId() {
     }
 }
 
+const appRoot = process.pkg ? path.dirname(process.execPath) : path.resolve(__dirname, '..');
 const CLIENT_ID = getHardwareId();
 const CONTROL_PANEL_URL = 'https://raw.githubusercontent.com/AlexZiron7/Sistema-restaurante-aurora/main/licenses.json';
-const LICENSE_CACHE_FILE = path.join(__dirname, '..', '.license_cache');
+const LICENSE_CACHE_FILE = path.join(appRoot, '.license_cache');
 
 let isSystemLocked = false;
 let lockMessage = 'El sistema requiere activación.';
@@ -69,31 +70,35 @@ async function checkLicenseStatus() {
     } catch (error) {
         console.warn('⚠️ No se pudo conectar con el servidor de licencias. Verificando caché local...');
         
-        if (fs.existsSync(LICENSE_CACHE_FILE)) {
-            try {
-                const cache = JSON.parse(fs.readFileSync(LICENSE_CACHE_FILE, 'utf8'));
-                const lastCheck = new Date(cache.lastCheck);
-                const now = new Date();
-                
-                // Calcular días transcurridos
-                const diffTime = Math.abs(now - lastCheck);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                
-                if (diffDays > GRACE_PERIOD_DAYS) {
-                    isSystemLocked = true;
-                    lockMessage = `El sistema requiere conexión a internet para verificar la licencia (Límite: ${GRACE_PERIOD_DAYS} días).`;
-                    console.error('❌ PERIODO DE GRACIA EXCEDIDO');
-                } else {
-                    isSystemLocked = false;
-                    console.log(`✅ Modo Offline (Día ${diffDays}/${GRACE_PERIOD_DAYS}).`);
-                }
-            } catch (e) {
+        if (!fs.existsSync(LICENSE_CACHE_FILE)) {
+            // First time run, but no internet or 404. Let's start the grace period.
+            fs.writeFileSync(LICENSE_CACHE_FILE, JSON.stringify({
+                lastCheck: new Date().getTime(),
+                clientId: CLIENT_ID
+            }));
+            console.log('✅ Modo Offline Iniciado (Primer uso).');
+        }
+
+        try {
+            const cache = JSON.parse(fs.readFileSync(LICENSE_CACHE_FILE, 'utf8'));
+            const lastCheck = new Date(cache.lastCheck);
+            const now = new Date();
+            
+            // Calcular días transcurridos
+            const diffTime = Math.abs(now - lastCheck);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays > GRACE_PERIOD_DAYS) {
                 isSystemLocked = true;
+                lockMessage = `El sistema requiere conexión a internet para verificar la licencia (Límite: ${GRACE_PERIOD_DAYS} días).`;
+                console.error('❌ PERIODO DE GRACIA EXCEDIDO');
+            } else {
+                isSystemLocked = false;
+                console.log(`✅ Modo Offline (Día ${diffDays}/${GRACE_PERIOD_DAYS}).`);
             }
-        } else {
-            // No hay caché (primera vez o borrada) y no hay internet
+        } catch (e) {
             isSystemLocked = true;
-            lockMessage = 'Se requiere conexión a internet para la activación inicial.';
+            lockMessage = 'Error leyendo la licencia local.';
         }
     }
 }
