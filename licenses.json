@@ -5,7 +5,7 @@
     },
     "00000000-000": {
         "status": "active",
-        "expiresAt": "2030-11-31T23:59:59Z",
+        "expiresAt": "2031-12-31T23:59:59Z",
         "message": "Licencia activa (Aurora Devs)."
     }
 }
