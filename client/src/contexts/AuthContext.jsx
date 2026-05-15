@@ -21,8 +21,14 @@ export function AuthProvider({ children }) {
     const storedUser = localStorage.getItem('restaurante_user');
     const storedToken = localStorage.getItem('restaurante_token');
     if (storedUser && storedToken) {
-      setUser(JSON.parse(storedUser));
-      setAuthToken(storedToken);
+      try {
+        setUser(JSON.parse(storedUser));
+        setAuthToken(storedToken);
+      } catch (e) {
+        console.error('Error al restaurar sesión:', e);
+        localStorage.removeItem('restaurante_user');
+        localStorage.removeItem('restaurante_token');
+      }
     }
     setLoading(false);
   }, []);

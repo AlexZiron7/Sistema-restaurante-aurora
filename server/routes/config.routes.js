@@ -1,5 +1,5 @@
 module.exports = function (app, io, deps) {
-  const { getDb, obtenerTasaBCV } = deps;
+  const { getDb, obtenerTasaBCV, requireRol } = deps;
 
   app.get('/api/tasa-bcv', (req, res) => {
     const db = getDb();
@@ -12,7 +12,7 @@ module.exports = function (app, io, deps) {
     });
   });
 
-  app.post('/api/tasa-bcv/actualizar', async (req, res) => {
+  app.post('/api/tasa-bcv/actualizar', requireRol('admin'), async (req, res) => {
     const db = getDb();
     const tasa = await obtenerTasaBCV();
     if (tasa) {
@@ -41,7 +41,7 @@ module.exports = function (app, io, deps) {
     });
   });
 
-  app.post('/api/config', (req, res) => {
+  app.post('/api/config', requireRol('admin'), (req, res) => {
     const db = getDb();
     const { clave, valor } = req.body;
 

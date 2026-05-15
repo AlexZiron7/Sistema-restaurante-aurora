@@ -11,6 +11,7 @@ export default function ProductoModal({
   });
   const [imagenPreview, setImagenPreview] = useState(null);
   const localFileRef = useRef(null);
+  const blobUrlRef = useRef(null);
 
   const usedFileRef = fileInputRef || localFileRef;
 
@@ -44,10 +45,21 @@ export default function ProductoModal({
     onSave({ form, producto, imagenFile: usedFileRef.current?.files?.[0] });
   };
 
+  useEffect(() => {
+    return () => {
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+      }
+    };
+  }, []);
+
   const handleLocalImagenChange = (e) => {
     onImagenChange?.(e);
     if (!producto && e.target.files?.[0]) {
-      setImagenPreview(URL.createObjectURL(e.target.files[0]));
+      if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
+      const url = URL.createObjectURL(e.target.files[0]);
+      blobUrlRef.current = url;
+      setImagenPreview(url);
     }
   };
 

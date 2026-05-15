@@ -93,6 +93,12 @@ module.exports = function (app, io, deps) {
     let pending = 3;
     let hasError = false;
 
+    const respondError = (msg) => {
+      if (hasError) return;
+      hasError = true;
+      res.status(500).json({ error: msg });
+    };
+
     const checkDone = () => {
       if (--pending === 0 && !hasError) res.json(result);
     };
@@ -103,7 +109,7 @@ module.exports = function (app, io, deps) {
       WHERE p.estado = 'pagado' AND date(p.fecha_cierre) BETWEEN ? AND ?
       ORDER BY p.fecha_cierre DESC
     `, [fechaDesde, fechaHasta], (err, pedidos) => {
-      if (err) { hasError = true; return res.status(500).json({ error: err.message }); }
+      if (err) return respondError(err.message);
       const totalVentas = pedidos.reduce((acc, p) => acc + (p.total || 0), 0);
       const totalPropinas = pedidos.reduce((acc, p) => acc + (p.propina || 0), 0);
       const porMetodo = {};
@@ -125,7 +131,7 @@ module.exports = function (app, io, deps) {
       WHERE p.estado = 'pagado' AND date(p.fecha_cierre) BETWEEN ? AND ?
       GROUP BY ip.nombre_producto ORDER BY cantidad DESC
     `, [fechaDesde, fechaHasta], (err, productos) => {
-      if (err) { hasError = true; return res.status(500).json({ error: err.message }); }
+      if (err) return respondError(err.message);
       const totalVendido = productos.reduce((acc, p) => acc + (p.total || 0), 0);
       result.productos = { items: productos, total_vendido: totalVendido, cantidad_productos: productos.length };
       checkDone();
@@ -138,7 +144,7 @@ module.exports = function (app, io, deps) {
       WHERE estado = 'pagado' AND nombre_mesonero IS NOT NULL AND date(fecha_cierre) BETWEEN ? AND ?
       GROUP BY nombre_mesonero ORDER BY ventas DESC
     `, [fechaDesde, fechaHasta], (err, mesoneros) => {
-      if (err) { hasError = true; return res.status(500).json({ error: err.message }); }
+      if (err) return respondError(err.message);
       const totalVentas = mesoneros.reduce((acc, m) => acc + (m.ventas || 0), 0);
       const totalPropinas = mesoneros.reduce((acc, m) => acc + (m.propinas || 0), 0);
       result.mesoneros = { items: mesoneros, total_ventas: totalVentas, total_propinas: totalPropinas, total_general: totalVentas + totalPropinas, cantidad_mesoneros: mesoneros.length };

@@ -1,6 +1,7 @@
 const { checkForUpdates, downloadAndInstall } = require('../updater');
 
 module.exports = (app, io, deps) => {
+    const { requireRol } = deps;
     
     // Consultar si hay actualizaciones
     app.get('/api/updates/check', async (req, res) => {
@@ -13,7 +14,7 @@ module.exports = (app, io, deps) => {
     });
 
     // Iniciar la descarga e instalación
-    app.post('/api/updates/install', async (req, res) => {
+    app.post('/api/updates/install', requireRol('admin'), async (req, res) => {
         const { url } = req.body;
         if (!url) return res.status(400).json({ error: 'URL de descarga requerida' });
 

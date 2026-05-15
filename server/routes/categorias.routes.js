@@ -1,5 +1,5 @@
 module.exports = function (app, io, deps) {
-  const { getDb } = deps;
+  const { getDb, requireRol } = deps;
 
   app.get('/api/categorias', (req, res) => {
     const db = getDb();
@@ -9,7 +9,7 @@ module.exports = function (app, io, deps) {
     });
   });
 
-  app.get('/api/admin/categorias', (req, res) => {
+  app.get('/api/admin/categorias', requireRol('admin', 'gerente'), (req, res) => {
     const db = getDb();
     db.all("SELECT * FROM categorias ORDER BY nombre", [], (err, rows) => {
       if (err) return res.status(500).json({ error: err.message });
@@ -17,7 +17,7 @@ module.exports = function (app, io, deps) {
     });
   });
 
-  app.post('/api/categorias', (req, res) => {
+  app.post('/api/categorias', requireRol('admin', 'gerente'), (req, res) => {
     const db = getDb();
     const { nombre, icono } = req.body;
     if (!nombre) {
@@ -29,7 +29,7 @@ module.exports = function (app, io, deps) {
     });
   });
 
-  app.put('/api/categorias/:id', (req, res) => {
+  app.put('/api/categorias/:id', requireRol('admin', 'gerente'), (req, res) => {
     const db = getDb();
     const { id } = req.params;
     const { nombre, icono } = req.body;
@@ -42,7 +42,7 @@ module.exports = function (app, io, deps) {
     });
   });
 
-  app.delete('/api/categorias/:id', (req, res) => {
+  app.delete('/api/categorias/:id', requireRol('admin', 'gerente'), (req, res) => {
     const db = getDb();
     const { id } = req.params;
     db.get("SELECT COUNT(*) as count FROM productos WHERE id_categoria = ?", [id], (err, row) => {

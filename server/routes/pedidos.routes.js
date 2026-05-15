@@ -19,7 +19,8 @@ module.exports = function (app, io, deps) {
 
         db.run("UPDATE mesas SET estado = 'ocupada' WHERE id = ?", [id_mesa]);
 
-        db.get("SELECT numero_mesa FROM mesas WHERE id = ?", [id_mesa], (_, row) => {
+        db.get("SELECT numero_mesa FROM mesas WHERE id = ?", [id_mesa], (err, row) => {
+          if (err) console.error('Error al obtener numero_mesa:', err.message);
           const n = row?.numero_mesa ?? id_mesa;
           io.emit('nuevo_pedido', { id_pedido, id_mesa, numero_mesa: n });
           io.emit('mesa_actualizada', { id: id_mesa, estado: 'ocupada' });
@@ -56,7 +57,8 @@ module.exports = function (app, io, deps) {
           res.json({ success: true });
         };
         if (id_mesa) {
-          db.get("SELECT numero_mesa FROM mesas WHERE id = ?", [id_mesa], (_, row2) => {
+          db.get("SELECT numero_mesa FROM mesas WHERE id = ?", [id_mesa], (err, row2) => {
+            if (err) console.error('Error al obtener numero_mesa:', err.message);
             afterEmit(row2?.numero_mesa);
           });
         } else {

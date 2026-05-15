@@ -73,7 +73,7 @@ describe('Mesas', () => {
     expect(res.status).toBe(200);
 
     const res2 = await request(app)
-      .get('/api/mesas')
+      .get('/api/productos')
       .set(auth(adminToken));
     expect(res2.status).toBe(401);
 
@@ -364,5 +364,49 @@ describe('Seguridad - Path Traversal Backups', () => {
   it('Delete with path traversal name returns 400', async () => {
     const res = await request(app).delete('/api/backups/..malicious').set(auth(adminToken));
     expect(res.status).toBe(400);
+  });
+});
+
+describe('Seguridad - Role Based Access Control', () => {
+  beforeAll(async () => {
+    const admin = await request(app).post('/api/auth/login').send({ usuario: 'admin', pin: '1234' });
+    adminToken = admin.body.token;
+    const mesonero = await request(app).post('/api/auth/login').send({ usuario: 'mesonero1', pin: '3333' });
+    mesoneroToken = mesonero.body.token;
+  });
+
+  it('mesonero cannot create mesa (403)', async () => {
+    const res = await request(app).post('/api/mesas').set(auth(mesoneroToken)).send({ numero_mesa: 99, capacidad: 4 });
+    expect(res.status).toBe(403);
+  });
+
+  it('mesonero cannot delete mesa (403)', async () => {
+    const res = await request(app).delete('/api/mesas/1').set(auth(mesoneroToken));
+    expect(res.status).toBe(403);
+  });
+
+  it('mesonero cannot create producto (403)', async () => {
+    const res = await request(app).post('/api/productos').set(auth(mesoneroToken)).send({ nombre: 'test', precio_usd: 5 });
+    expect(res.status).toBe(403);
+  });
+
+  it('mesonero cannot create usuario (403)', async () => {
+    const res = await request(app).post('/api/usuarios').set(auth(mesoneroToken)).send({ usuario: 'test', pin: '1234', nombre: 'Test', rol: 'mesonero' });
+    expect(res.status).toBe(403);
+  });
+
+  it('mesonero cannot create backup (403)', async () => {
+    const res = await request(app).post('/api/backups').set(auth(mesoneroToken));
+    expect(res.status).toBe(403);
+  });
+
+  it('mesonero cannot update config (403)', async () => {
+    const res = await request(app).post('/api/config').set(auth(mesoneroToken)).send({ clave: 'test', valor: 'test' });
+    expect(res.status).toBe(403);
+  });
+
+  it('admin can create mesa (200)', async () => {
+    const res = await request(app).post('/api/mesas').set(auth(adminToken)).send({ numero_mesa: 50, capacidad: 4 });
+    expect(res.status).toBe(200);
   });
 });

@@ -119,7 +119,7 @@ export default function CocinaPage() {
       
       setPedidosCocina(filtrados);
     } catch (err) {
-      // Error cargando pedidos
+      console.error('Error cargando pedidos:', err);
     }
     setLoading(false);
   }, [mesasOcultas, sonidoActivo]);
@@ -175,7 +175,8 @@ export default function CocinaPage() {
       fetchMesas();
       cargarPedidos();
     } catch (err) {
-      // Error al marcar pedido como listo
+      console.error('Error al marcar pedido como listo:', err);
+      error('Error al marcar pedido como listo');
     }
   };
 

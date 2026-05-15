@@ -1,7 +1,7 @@
 module.exports = function (app, io, deps) {
-  const { getDb, upload, path, fs, appRoot } = deps;
+  const { getDb, upload, path, fs, appRoot, requireRol } = deps;
 
-  app.post('/api/productos/:id/imagen', upload.single('imagen'), (req, res) => {
+  app.post('/api/productos/:id/imagen', requireRol('admin', 'gerente'), upload.single('imagen'), (req, res) => {
     const db = getDb();
     const { id } = req.params;
 
@@ -24,7 +24,7 @@ module.exports = function (app, io, deps) {
     res.status(200).send(csvContent);
   });
 
-  app.delete('/api/productos/:id/imagen', (req, res) => {
+  app.delete('/api/productos/:id/imagen', requireRol('admin', 'gerente'), (req, res) => {
     const db = getDb();
     const { id } = req.params;
 
@@ -61,7 +61,7 @@ module.exports = function (app, io, deps) {
     });
   });
 
-  app.post('/api/productos', (req, res) => {
+  app.post('/api/productos', requireRol('admin', 'gerente'), (req, res) => {
     const db = getDb();
     const { nombre, precio_usd, id_categoria, es_combo, productos_incluidos, precio_combo, descripcion } = req.body;
 
@@ -78,7 +78,7 @@ module.exports = function (app, io, deps) {
       });
   });
 
-  app.put('/api/productos/:id', (req, res) => {
+  app.put('/api/productos/:id', requireRol('admin', 'gerente'), (req, res) => {
     const db = getDb();
     const { id } = req.params;
     const { nombre, precio_usd, id_categoria, activo, es_combo, productos_incluidos, precio_combo, descripcion } = req.body;
@@ -113,7 +113,7 @@ module.exports = function (app, io, deps) {
     });
   });
 
-  app.delete('/api/productos/:id', (req, res) => {
+  app.delete('/api/productos/:id', requireRol('admin', 'gerente'), (req, res) => {
     const db = getDb();
     const { id } = req.params;
 
@@ -134,7 +134,7 @@ module.exports = function (app, io, deps) {
       });
     });
   });
-  app.post('/api/productos/importar', async (req, res) => {
+  app.post('/api/productos/importar', requireRol('admin', 'gerente'), async (req, res) => {
     const db = getDb();
     const { productos } = req.body;
 

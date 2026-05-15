@@ -1,5 +1,5 @@
 module.exports = function (app, io, deps) {
-  const { getDb, bcrypt } = deps;
+  const { getDb, bcrypt, requireRol } = deps;
 
   app.get('/api/usuarios', (req, res) => {
     const db = getDb();
@@ -10,7 +10,7 @@ module.exports = function (app, io, deps) {
     });
   });
 
-  app.get('/api/usuarios/:id', (req, res) => {
+  app.get('/api/usuarios/:id', requireRol('admin'), (req, res) => {
     const db = getDb();
     const { id } = req.params;
     db.get("SELECT id, usuario, nombre, rol FROM usuarios WHERE id = ?", [id], (err, row) => {
@@ -20,7 +20,7 @@ module.exports = function (app, io, deps) {
     });
   });
 
-  app.post('/api/usuarios', (req, res) => {
+  app.post('/api/usuarios', requireRol('admin'), (req, res) => {
     const db = getDb();
     const { usuario, pin, nombre, rol } = req.body;
 
@@ -57,7 +57,7 @@ module.exports = function (app, io, deps) {
     });
   });
 
-  app.put('/api/usuarios/:id', (req, res) => {
+  app.put('/api/usuarios/:id', requireRol('admin'), (req, res) => {
     const db = getDb();
     const { id } = req.params;
     const { usuario, pin, nombre, rol, estado_activo } = req.body;
@@ -105,7 +105,7 @@ module.exports = function (app, io, deps) {
     }
   });
 
-  app.delete('/api/usuarios/:id', (req, res) => {
+  app.delete('/api/usuarios/:id', requireRol('admin'), (req, res) => {
     const db = getDb();
     const { id } = req.params;
 

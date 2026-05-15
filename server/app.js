@@ -62,7 +62,7 @@ app.use(cors({
         if (!origin || ALLOWED_ORIGINS.includes(origin)) {
             callback(null, true);
         } else {
-            callback(null, true);
+            callback(new Error('Not allowed by CORS'));
         }
     }
 }));
@@ -110,7 +110,7 @@ io.on('connection', (socket) => {
     console.log('📱 Dispositivo conectado:', socket.id);
     
     socket.on('disconnect', () => {
-        console.log('📴 Dispositivo desconectado:', socket.id);
+        console.debug('📴 Dispositivo desconectado:', socket.id);
     });
 });
 
@@ -132,7 +132,7 @@ async function initTasaBCV() {
 
 if (!process.env.VITEST_DB) initTasaBCV();
 
-const deps = { getDb, setModoDemo, upload, bcrypt, obtenerTasaBCV, path, fs, appRoot, crearToken, destruirToken };
+const deps = { getDb, setModoDemo, upload, bcrypt, obtenerTasaBCV, path, fs, appRoot, crearToken, destruirToken, requireRol };
 
 require('./routes/auth.routes')(app, io, deps);
 require('./routes/mesas.routes')(app, io, deps);

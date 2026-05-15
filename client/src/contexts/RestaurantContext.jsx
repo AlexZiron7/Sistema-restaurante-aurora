@@ -197,9 +197,11 @@ export function RestaurantProvider({ children }) {
 
   const formatearPrecio = (usd) => {
     if (!tasaBCV || tasaBCV === 0) {
-      return config.mostrar_precios_usd ? `$${usd.toFixed(2)}` : '';
+      return config.mostrar_precios_usd
+        ? { usd: `$${usd.toFixed(2)}`, bs: null }
+        : { usd: null, bs: null };
     }
-    
+
     const bs = usd * tasaBCV;
     const bsFormateado = bs.toLocaleString('es-VE', {
       minimumFractionDigits: 2,

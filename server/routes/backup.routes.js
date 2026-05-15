@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('fs');
 
 module.exports = function (app, io, deps) {
-  const { appRoot } = deps;
+  const { appRoot, requireRol } = deps;
 
   function getBackupsDir() {
     return path.resolve(appRoot, 'backups');
@@ -23,7 +23,7 @@ module.exports = function (app, io, deps) {
     }
   }
 
-  app.post('/api/backups', (req, res) => {
+  app.post('/api/backups', requireRol('admin'), (req, res) => {
     if (process.env.VITEST_DB) {
       return res.status(400).json({ success: false, message: 'No disponible en modo prueba' });
     }
@@ -55,7 +55,7 @@ module.exports = function (app, io, deps) {
     }
   });
 
-  app.post('/api/backups/restore/:filename', (req, res) => {
+  app.post('/api/backups/restore/:filename', requireRol('admin'), (req, res) => {
     const filename = req.params.filename;
     if (!isSafeFilename(filename)) {
       return res.status(400).json({ success: false, message: 'Nombre de archivo inválido' });
@@ -72,7 +72,7 @@ module.exports = function (app, io, deps) {
     }
   });
 
-  app.delete('/api/backups/:filename', (req, res) => {
+  app.delete('/api/backups/:filename', requireRol('admin'), (req, res) => {
     const filename = req.params.filename;
     if (!isSafeFilename(filename)) {
       return res.status(400).json({ success: false, message: 'Nombre de archivo inválido' });

@@ -8,7 +8,7 @@
 ; ===========================================================================
 
 #define MyAppName      "Aurora RES"
-#define MyAppVersion   "1.0.3"
+#define MyAppVersion   "1.0.4"
 #define MyAppPublisher "Aurora Devs"
 #define MyAppURL       "https://auroradevs.com"
 #define MyAppExeName   "AuroraRES.exe"

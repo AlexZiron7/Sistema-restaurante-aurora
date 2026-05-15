@@ -1,5 +1,5 @@
 module.exports = function (app, io, deps) {
-  const { getDb } = deps;
+  const { getDb, requireRol } = deps;
 
   app.get('/api/mesas', (req, res) => {
     const db = getDb();
@@ -9,7 +9,7 @@ module.exports = function (app, io, deps) {
     });
   });
 
-  app.post('/api/mesas', (req, res) => {
+  app.post('/api/mesas', requireRol('admin', 'gerente'), (req, res) => {
     const db = getDb();
     const { numero_mesa, capacidad } = req.body;
 
@@ -31,7 +31,7 @@ module.exports = function (app, io, deps) {
     });
   });
 
-  app.put('/api/mesas/:id', (req, res) => {
+  app.put('/api/mesas/:id', requireRol('admin', 'gerente'), (req, res) => {
     const db = getDb();
     const { id } = req.params;
     const { numero_mesa, capacidad } = req.body;
@@ -54,7 +54,7 @@ module.exports = function (app, io, deps) {
     });
   });
 
-  app.delete('/api/mesas/:id', (req, res) => {
+  app.delete('/api/mesas/:id', requireRol('admin', 'gerente'), (req, res) => {
     const db = getDb();
     const { id } = req.params;
 
@@ -157,7 +157,7 @@ module.exports = function (app, io, deps) {
     });
   });
 
-  app.post('/api/mesas/:id/cobrar', (req, res) => {
+  app.post('/api/mesas/:id/cobrar', requireRol('admin', 'gerente', 'cajero'), (req, res) => {
     const db = getDb();
     const { id } = req.params;
     const { metodo_pago, datos_pago } = req.body;
