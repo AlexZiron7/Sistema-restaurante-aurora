@@ -4,6 +4,7 @@ const { app } = require('../app');
 
 let adminToken;
 let mesoneroToken;
+let duenoToken;
 
 function auth(token) {
   return { Authorization: `Bearer ${token}` };
@@ -373,6 +374,8 @@ describe('Seguridad - Role Based Access Control', () => {
     adminToken = admin.body.token;
     const mesonero = await request(app).post('/api/auth/login').send({ usuario: 'mesonero1', pin: '3333' });
     mesoneroToken = mesonero.body.token;
+    const dueno = await request(app).post('/api/auth/login').send({ usuario: 'dueno', pin: '0000' });
+    duenoToken = dueno.body.token;
   });
 
   it('mesonero cannot create mesa (403)', async () => {
@@ -407,6 +410,16 @@ describe('Seguridad - Role Based Access Control', () => {
 
   it('admin can create mesa (200)', async () => {
     const res = await request(app).post('/api/mesas').set(auth(adminToken)).send({ numero_mesa: 50, capacidad: 4 });
+    expect(res.status).toBe(200);
+  });
+
+  it('dueno can create mesa (200)', async () => {
+    const res = await request(app).post('/api/mesas').set(auth(duenoToken)).send({ numero_mesa: 51, capacidad: 6 });
+    expect(res.status).toBe(200);
+  });
+
+  it('dueno can create usuario (200)', async () => {
+    const res = await request(app).post('/api/usuarios').set(auth(duenoToken)).send({ usuario: 'nuevo', pin: '1234', nombre: 'Nuevo', rol: 'mesonero' });
     expect(res.status).toBe(200);
   });
 });
