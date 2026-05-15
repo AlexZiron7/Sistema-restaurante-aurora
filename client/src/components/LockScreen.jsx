@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 
 const LockScreen = ({ message, clientId }) => {
-  const WHATSAPP_NUMBER = "584123456789"; 
+  const WHATSAPP_NUMBER = "584127108519"; 
   const whatsappMessage = encodeURIComponent(`Hola Aurora Devs, solicito activación para mi sistema.\n\nMi ID de Hardware es: ${clientId}`);
   const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappMessage}`;
 
