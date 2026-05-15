@@ -39,7 +39,8 @@ async function checkLicenseStatus(caller = 'desconocido') {
     console.log(`[License] [${ts}] Iniciando verificación. Llamado por: ${caller}. Estado actual: locked=${isSystemLocked}`);
     try {
         console.log(`[License] Verificando estado para: ${CLIENT_ID}...`);
-        const response = await axios.get(CONTROL_PANEL_URL, { timeout: 8000 });
+        const urlWithCacheBuster = `${CONTROL_PANEL_URL}?t=${Date.now()}`;
+        const response = await axios.get(urlWithCacheBuster, { timeout: 8000 });
         const remoteData = response.data;
 
         if (!remoteData || !remoteData[CLIENT_ID]) {
